@@ -8,26 +8,27 @@ export default function Home() {
       {/* Navbar Card */}
       <div className="bg-white rounded-[2rem] shadow-sm w-full max-w-[1300px]">
         <header className="px-6 py-4 flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 text-slate-900">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 text-[#0F172A]">
               <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM3.89 9L12 4.57 20.11 9 12 13.43 3.89 9zM12 17a3 3 0 100 6 3 3 0 000-6zm0 4a1 1 0 110-2 1 1 0 010 2z"></path>
               </svg>
             </div>
-            <span className="text-lg font-bold tracking-tight">Law Consult</span>
-          </div>
+            <span className="text-xl font-bold tracking-tight text-[#0F172A]">Law Consult</span>
+          </Link>
           <nav className="hidden lg:flex items-center gap-10 text-[14px] font-semibold text-slate-600">
-            <Link href="#" className="text-slate-900">Home</Link>
-            <Link href="#" className="hover:text-slate-900 transition">About</Link>
-            <Link href="#" className="hover:text-slate-900 transition">Services</Link>
-            <Link href="#" className="hover:text-slate-900 transition">Team</Link>
-            <Link href="#" className="hover:text-slate-900 transition">Reviews</Link>
+            <Link href="#home" className="hover:text-slate-900 transition">Beranda</Link>
+            <Link href="#services" className="hover:text-slate-900 transition">Layanan</Link>
+            <Link href="#how-it-works" className="hover:text-slate-900 transition">Cara Kerja</Link>
+            <Link href="#about" className="hover:text-slate-900 transition">Tentang</Link>
+            <Link href="#team" className="hover:text-slate-900 transition">Tim Lawyer</Link>
+            <Link href="#reviews" className="hover:text-slate-900 transition">Ulasan</Link>
           </nav>
           <div className="flex items-center gap-4">
-            <Link href="#" className="hidden md:flex text-[14px] font-semibold text-slate-600 hover:text-slate-900 transition">
+            <Link href="/login" className="hidden md:flex text-[14px] font-semibold text-slate-600 hover:text-slate-900 transition">
               Login
             </Link>
-            <Link href="#" className="px-5 py-2 bg-[#1D64FB] text-white rounded-full text-[14px] font-semibold hover:bg-blue-700 transition shadow-sm">
+            <Link href="/register" className="px-5 py-2 bg-[#1D64FB] text-white rounded-full text-[14px] font-semibold hover:bg-blue-700 transition shadow-sm">
               Mulai Konsultasi
             </Link>
           </div>
@@ -36,8 +37,8 @@ export default function Home() {
 
       <main className="w-full max-w-[1300px] flex flex-col gap-4 md:gap-6 flex-grow">
         
-        {/* Hero Section Card */}
-        <section className="bg-white rounded-[3rem] shadow-sm w-full p-6 md:p-10">
+        {/* 1. Hero Section Card */}
+        <section id="home" className="bg-white rounded-[3rem] shadow-sm w-full p-6 md:p-10">
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-center leading-tight mb-8 md:mb-10 text-slate-900 mt-0">
             Lawyer Profesional Online
           </h1>
@@ -53,47 +54,20 @@ export default function Home() {
               <p className="text-[14px] text-slate-800 font-medium mb-6 leading-relaxed">
                 Konsultasi hukum cepat, privat, langsung dengan lawyer terverifikasi.
               </p>
-              <Button className="bg-[#1D64FB] hover:bg-blue-700 text-white rounded-2xl px-6 py-5 text-[14px] font-semibold flex items-center gap-2 w-full justify-center">
-                Start Chat Sekarang
-                <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center ml-1">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"></path></svg>
-                </div>
-              </Button>
+              <Link href="/register" className="w-full">
+                <Button className="bg-[#1D64FB] hover:bg-blue-700 text-white rounded-2xl px-6 py-5 text-[14px] font-semibold flex items-center gap-2 w-full justify-center">
+                  Start Chat Sekarang
+                  <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center ml-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"></path></svg>
+                  </div>
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
 
-        {/* About Us Card */}
-        <section className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16 grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div className="relative h-[300px] md:h-[400px] rounded-[2rem] overflow-hidden shadow-md">
-            <Image 
-              alt="About Us" 
-              className="object-cover w-full h-full" 
-              src="/about-bg.png"
-              fill
-            />
-          </div>
-          <div className="pr-0 lg:pr-8">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-6 text-slate-900">Tentang Law Consult</h2>
-            <div className="text-slate-600 text-[15px] leading-relaxed mb-8 font-medium space-y-4">
-              <p>
-                Law Consult adalah platform konsultasi hukum digital yang menghubungkan Anda dengan lawyer profesional secara langsung.
-              </p>
-              <p>
-                Kami membantu Anda mendapatkan solusi hukum dengan cepat, aman, dan tanpa proses yang rumit.
-              </p>
-            </div>
-            <Button className="bg-[#1D64FB] hover:bg-blue-700 text-white rounded-2xl px-6 py-5 text-[14px] font-semibold flex items-center gap-2">
-              Mulai Konsultasi
-              <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center ml-1">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"></path></svg>
-              </div>
-            </Button>
-          </div>
-        </section>
-
-        {/* Services Card */}
-        <section className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16">
+        {/* 2. Services Card */}
+        <section id="services" className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-10 text-slate-900">Kategori Konsultasi</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
@@ -121,8 +95,65 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Our Lawyers Card */}
-        <section className="bg-white rounded-[3rem] shadow-sm w-full p-6 md:p-10 lg:p-12">
+        {/* 3. Cara Kerja Card (NEW) */}
+        <section id="how-it-works" className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">Cara Kerja Law Consult</h2>
+            <p className="text-slate-600 text-[15px] font-medium max-w-xl mx-auto">
+              Dapatkan solusi hukum hanya dalam 3 langkah mudah.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 md:gap-4 relative max-w-5xl mx-auto">
+            {/* Connecting line for desktop */}
+            <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-[2px] bg-slate-100 z-0"></div>
+            
+            {[
+              { step: "01", title: "Pilih Lawyer & Kategori", desc: "Cari lawyer profesional yang sesuai dengan masalah hukum Anda (Perdata, Pidana, Bisnis, dsb)." },
+              { step: "02", title: "Mulai Chat / Konsultasi", desc: "Lakukan pembayaran aman dan langsung terhubung via chat atau video call secara privat." },
+              { step: "03", title: "Dapatkan Solusi Hukum", desc: "Diskusikan masalah Anda dan dapatkan dokumen legalitas atau saran hukum yang akurat." }
+            ].map((item, i) => (
+              <div key={i} className="relative z-10 flex flex-col items-center text-center px-4">
+                <div className="w-24 h-24 rounded-full bg-slate-50 border-8 border-white shadow-sm flex items-center justify-center mb-6">
+                  <span className="text-2xl font-black text-[#1D64FB] tracking-tighter">{item.step}</span>
+                </div>
+                <h3 className="text-[17px] font-bold mb-3 text-slate-900">{item.title}</h3>
+                <p className="text-slate-500 text-[14px] leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 4. About Us Card */}
+        <section id="about" className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16 grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="relative h-[300px] md:h-[400px] rounded-[2rem] overflow-hidden shadow-md">
+            <Image 
+              alt="About Us" 
+              className="object-cover w-full h-full" 
+              src="/about-bg.png"
+              fill
+            />
+          </div>
+          <div className="pr-0 lg:pr-8">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-6 text-slate-900">Tentang Law Consult</h2>
+            <div className="text-slate-600 text-[15px] leading-relaxed mb-8 font-medium space-y-4">
+              <p>
+                Law Consult adalah platform konsultasi hukum digital yang menghubungkan Anda dengan lawyer profesional secara langsung.
+              </p>
+              <p>
+                Kami membantu Anda mendapatkan solusi hukum dengan cepat, aman, dan tanpa proses yang rumit.
+              </p>
+            </div>
+            <Button className="bg-[#1D64FB] hover:bg-blue-700 text-white rounded-2xl px-6 py-5 text-[14px] font-semibold flex items-center gap-2">
+              Mulai Konsultasi
+              <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center ml-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"></path></svg>
+              </div>
+            </Button>
+          </div>
+        </section>
+
+        {/* 5. Our Lawyers Card */}
+        <section id="team" className="bg-white rounded-[3rem] shadow-sm w-full p-6 md:p-10 lg:p-12">
           <div className="flex justify-end mb-4">
             <div className="flex gap-2">
               <button className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition">
@@ -163,8 +194,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Customer Reviews Card */}
-        <section className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16">
+        {/* 6. Customer Reviews Card */}
+        <section id="reviews" className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-10 text-slate-900">Apa Kata Pengguna Law Consult</h2>
           <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="relative h-[300px] md:h-[400px] rounded-[2rem] overflow-hidden shadow-md">
@@ -195,7 +226,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CTA Section Card */}
+        {/* 7. CTA Section Card */}
         <section className="bg-[#1D64FB] rounded-[3rem] p-10 md:p-16 text-center text-white relative overflow-hidden shadow-sm">
           <div className="relative z-10 max-w-3xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 leading-tight">
@@ -205,9 +236,11 @@ export default function Home() {
               Jangan biarkan masalah hukum berlarut. Konsultasikan sekarang juga dengan lawyer profesional.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button className="bg-white text-[#1D64FB] hover:bg-slate-50 rounded-full px-8 py-5 text-[14px] font-bold w-full sm:w-auto">
-                Start Chat Sekarang
-              </Button>
+              <Link href="/register" className="w-full sm:w-auto">
+                <Button className="bg-white text-[#1D64FB] hover:bg-slate-50 rounded-full px-8 py-5 text-[14px] font-bold w-full sm:w-auto">
+                  Start Chat Sekarang
+                </Button>
+              </Link>
               <Button variant="outline" className="border-2 border-white/30 text-white bg-transparent hover:bg-white/10 rounded-full px-8 py-5 text-[14px] font-bold w-full sm:w-auto">
                 Lihat Cara Kerja
               </Button>
@@ -217,18 +250,18 @@ export default function Home() {
 
       </main>
 
-      {/* Footer Card */}
+      {/* 8. Footer Card */}
       <footer className="bg-white rounded-[3rem] shadow-sm w-full max-w-[1300px] px-8 py-10 md:px-16 md:py-16 mt-2">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
           <div className="lg:col-span-2 pr-8">
-            <div className="flex items-center gap-2 mb-6 text-slate-900">
-              <div className="w-6 h-6">
+            <Link href="/" className="flex items-center gap-2 mb-6">
+              <div className="w-10 h-10 text-[#0F172A]">
                 <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM3.89 9L12 4.57 20.11 9 12 13.43 3.89 9zM12 17a3 3 0 100 6 3 3 0 000-6zm0 4a1 1 0 110-2 1 1 0 010 2z"></path>
                 </svg>
               </div>
-              <span className="text-lg font-bold tracking-tight">Law Consult</span>
-            </div>
+              <span className="text-2xl font-bold tracking-tight text-[#0F172A]">Law Consult</span>
+            </Link>
             <p className="text-[14px] text-slate-500 mb-6 leading-relaxed max-w-sm font-medium">
               Platform Konsultasi Hukum Digital. Konsultasi cepat, aman, dan terpercaya langsung dengan lawyer profesional.
             </p>

@@ -69,6 +69,7 @@
 @layer base {
   html {
     font-size: 90%;
+    scroll-behavior: smooth;
   }
   * {
     @apply border-border;
@@ -76,4 +77,21 @@
   body {
     @apply bg-background text-foreground font-sans antialiased overflow-x-hidden;
   }
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth scroll for main content areas */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
