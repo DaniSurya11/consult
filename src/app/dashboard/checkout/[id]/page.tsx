@@ -11,6 +11,25 @@ export default function CheckoutPage() {
   const lawyer = getLawyerById(Number(params.id));
   const [isPaying, setIsPaying] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minutes in seconds
+
+  // Countdown Timer
+  useEffect(() => {
+    if (isSuccess || isPaying) return;
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) { clearInterval(interval); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isSuccess, isPaying]);
+
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  };
 
   if (!lawyer) {
     return (
@@ -35,16 +54,16 @@ export default function CheckoutPage() {
   return (
     <div className="bg-white min-h-full">
       {/* Back Navigation */}
-      <div className="px-8 pt-6 pb-4">
+      <div className="px-4 sm:px-8 pt-6 pb-4">
         <Button variant="ghost" onClick={() => router.back()} className="text-sm font-medium text-slate-500 hover:text-[#1D64FB] transition-colors -ml-4">
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
           Kembali
         </Button>
       </div>
 
-      <div className="px-8 pb-10 max-w-5xl mx-auto">
-        <h1 className="text-xl font-bold text-[#0F172A] mb-1 tracking-tight">Checkout Pembayaran</h1>
-        <p className="text-sm text-slate-500 font-medium mb-8">Selesaikan pembayaran untuk memulai konsultasi</p>
+      <div className="px-4 sm:px-8 pb-10 max-w-5xl mx-auto">
+        <h1 className="text-lg sm:text-xl font-bold text-[#0F172A] mb-1 tracking-tight">Checkout Pembayaran</h1>
+        <p className="text-xs sm:text-sm text-slate-500 font-medium mb-8">Selesaikan pembayaran untuk memulai konsultasi</p>
 
         {/* Success Overlay */}
         {isSuccess && (
@@ -91,12 +110,21 @@ export default function CheckoutPage() {
           {/* Right Column: QRIS Payment */}
           <div>
             <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
-              <h2 className="text-sm font-bold text-[#0F172A] mb-1 tracking-tight">Metode Pembayaran</h2>
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-sm font-bold text-[#0F172A] tracking-tight">Metode Pembayaran</h2>
+                {/* Countdown Timer */}
+                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${timeLeft < 120 ? 'bg-red-50 text-red-500' : 'bg-orange-50 text-orange-500'}`}>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  {formatTime(timeLeft)}
+                </div>
+              </div>
               <p className="text-xs text-slate-500 mb-6">Scan QRIS menggunakan aplikasi e-wallet atau mobile banking Anda</p>
 
               {/* QRIS Code Mockup */}
               <div className="flex flex-col items-center py-4">
                 <div className="w-56 h-56 bg-white rounded-2xl border-2 border-slate-200 p-3 mb-4 relative">
+                  {/* Scanning line animation */}
+                  <div className="absolute left-3 right-3 h-[3px] bg-gradient-to-r from-transparent via-[#1D64FB] to-transparent rounded-full qris-scan-line z-10"></div>
                   {/* Simulated QR Pattern */}
                   <div className="w-full h-full bg-white relative overflow-hidden rounded-lg">
                     <svg viewBox="0 0 200 200" className="w-full h-full">
@@ -110,7 +138,7 @@ export default function CheckoutPage() {
                       {/* QR data pattern */}
                       {[...Array(8)].map((_, row) => (
                         [...Array(8)].map((_, col) => {
-                          const show = (row + col) % 3 !== 0 && Math.random() > 0.3;
+                          const show = (row + col) % 3 !== 0 && (row * 8 + col) % 2 === 0;
                           if ((row < 3 && col < 3) || (row < 3 && col > 4) || (row > 4 && col < 3)) return null;
                           return show ? <rect key={`${row}-${col}`} x={70 + col * 9} y={70 + row * 9} width="7" height="7" rx="1" fill="#0F172A"/> : null;
                         })
@@ -127,7 +155,7 @@ export default function CheckoutPage() {
                 {/* Pay Button */}
                 <Button 
                   onClick={handlePayment}
-                  disabled={isPaying || isSuccess}
+                  disabled={isPaying || isSuccess || timeLeft === 0}
                   className="w-full bg-[#1D64FB] hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl h-12 text-sm font-bold shadow-sm transition-all"
                 >
                   {isPaying ? (
@@ -137,6 +165,8 @@ export default function CheckoutPage() {
                     </span>
                   ) : isSuccess ? (
                     "Pembayaran Berhasil ✓"
+                  ) : timeLeft === 0 ? (
+                    "Waktu Habis — Kembali"
                   ) : (
                     "Konfirmasi Pembayaran"
                   )}

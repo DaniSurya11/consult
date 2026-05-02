@@ -38,12 +38,12 @@ export default function BookingsPage() {
   const router = useRouter();
 
   return (
-    <div className="bg-white min-h-full px-8 py-8">
+    <div className="bg-white min-h-full px-4 sm:px-8 py-6 sm:py-8">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-xl font-bold text-[#0F172A] mb-1 tracking-tight">Riwayat Booking</h1>
-          <p className="text-sm text-slate-500 font-medium">Daftar konsultasi yang pernah Anda lakukan</p>
+          <h1 className="text-lg sm:text-xl font-bold text-[#0F172A] mb-0.5 sm:mb-1 tracking-tight">Riwayat Booking</h1>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">Daftar konsultasi yang pernah Anda lakukan</p>
         </div>
       </div>
 

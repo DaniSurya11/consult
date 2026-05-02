@@ -19,6 +19,7 @@ export default function ChatPage() {
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showEndModal, setShowEndModal] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, sender: "lawyer", text: `Selamat datang di sesi konsultasi! Saya ${lawyer?.name || "Lawyer"}. Ada yang bisa saya bantu hari ini?`, time: "Baru saja" },
@@ -59,14 +60,16 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, userMsg]);
     setInputText("");
 
-    // Auto reply after a delay
+    // Auto reply after a delay - show typing indicator first
+    setIsTyping(true);
     setTimeout(() => {
+      setIsTyping(false);
       const replyIndex = Math.min(messages.length - 1, autoReplies.length - 1);
       const replyTime = new Date();
       const replyTimeStr = `${replyTime.getHours().toString().padStart(2, '0')}:${replyTime.getMinutes().toString().padStart(2, '0')}`;
       const lawyerMsg: Message = { id: messages.length + 2, sender: "lawyer", text: autoReplies[replyIndex >= 0 ? replyIndex : 0], time: replyTimeStr };
       setMessages((prev) => [...prev, lawyerMsg]);
-    }, 1500);
+    }, 2200);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -143,6 +146,27 @@ export default function ChatPage() {
             </div>
           </div>
         ))}
+
+        {/* Typing Indicator */}
+        {isTyping && (
+          <div className="flex justify-start">
+            <div className="max-w-[75%]">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-6 h-6 rounded-full overflow-hidden border border-slate-100 shrink-0">
+                  <img src={lawyer.img} alt="" className="w-full h-full object-cover" />
+                </div>
+                <span className="text-[11px] font-bold text-slate-600">{lawyer.name}</span>
+              </div>
+              <div className="px-4 py-3 rounded-2xl bg-[#F8FAFC] border border-slate-200 rounded-bl-md inline-flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-slate-400 typing-dot-1"></span>
+                <span className="w-2 h-2 rounded-full bg-slate-400 typing-dot-2"></span>
+                <span className="w-2 h-2 rounded-full bg-slate-400 typing-dot-3"></span>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">sedang mengetik...</p>
+            </div>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 

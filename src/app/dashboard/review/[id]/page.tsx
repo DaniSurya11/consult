@@ -67,7 +67,7 @@ export default function ReviewPage() {
                 onMouseEnter={() => setHoverRating(star)}
                 onMouseLeave={() => setHoverRating(0)}
                 onClick={() => setRating(star)}
-                className="transition-transform hover:scale-110"
+                className="transition-all duration-200 hover:scale-125 active:scale-95"
               >
                 <svg 
                   className={`w-10 h-10 transition-colors ${

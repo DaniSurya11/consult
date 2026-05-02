@@ -28,14 +28,14 @@ export default function LawyerProfilePage() {
   return (
     <div className="bg-white min-h-full">
       {/* Back Navigation */}
-      <div className="px-8 pt-6 pb-4">
+      <div className="px-4 sm:px-8 pt-6 pb-4">
         <Button variant="ghost" onClick={() => router.back()} className="text-sm font-medium text-slate-500 hover:text-[#1D64FB] transition-colors -ml-4">
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
           Kembali
         </Button>
       </div>
 
-      <div className="px-8 pb-10">
+      <div className="px-4 sm:px-8 pb-10">
         {/* Profile Header Card */}
         <div className="bg-[#F8FAFC] rounded-2xl border border-slate-200 p-6 mb-6">
           <div className="flex flex-col md:flex-row gap-6">

@@ -1,12 +1,33 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.6, ease: "easeOut" }
+};
+
+const staggerContainer = {
+  initial: { opacity: 0 },
+  whileInView: { opacity: 1 },
+  viewport: { once: true },
+  transition: { staggerChildren: 0.1 }
+};
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 overflow-x-hidden font-sans p-4 md:p-6 flex flex-col gap-4 md:gap-6 items-center">
       {/* Navbar Card */}
-      <div className="bg-white rounded-[2rem] shadow-sm w-full max-w-[1300px]">
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="bg-white rounded-[2rem] shadow-sm w-full max-w-[1300px] z-50"
+      >
         <header className="px-6 py-4 flex items-center justify-between w-full">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 text-[#0F172A]">
@@ -33,24 +54,40 @@ export default function Home() {
             </Link>
           </div>
         </header>
-      </div>
+      </motion.div>
 
       <main className="w-full max-w-[1300px] flex flex-col gap-4 md:gap-6 flex-grow">
-        
+
         {/* 1. Hero Section Card */}
-        <section id="home" className="bg-white rounded-[3rem] shadow-sm w-full p-6 md:p-10">
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-center leading-tight mb-8 md:mb-10 text-slate-900 mt-0">
+        <motion.section 
+          id="home"
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+          className="bg-white rounded-[3rem] shadow-sm w-full p-6 md:p-10"
+        >
+          <motion.h1 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-center leading-tight mb-8 md:mb-10 text-slate-900 mt-0"
+          >
             Lawyer Profesional Online
-          </h1>
+          </motion.h1>
           <div className="relative w-full h-[60vh] md:h-[calc(100vh-20rem)] min-h-[450px] max-h-[750px] rounded-[2rem] overflow-hidden shadow-lg">
-            <Image 
-              alt="Lawyer Profesional" 
-              className="object-cover object-center w-full h-full" 
+            <Image
+              alt="Lawyer Profesional"
+              className="object-cover object-center w-full h-full"
               src="/hero-bg.png"
               fill
               priority
             />
-            <div className="absolute bottom-4 left-4 md:bottom-8 md:left-8 bg-white p-6 md:p-8 rounded-3xl max-w-[340px] shadow-2xl">
+            <motion.div 
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="absolute bottom-4 left-4 md:bottom-8 md:left-8 bg-white p-6 md:p-8 rounded-3xl max-w-[340px] shadow-2xl"
+            >
               <p className="text-[14px] text-slate-800 font-medium mb-6 leading-relaxed">
                 Konsultasi hukum cepat, privat, langsung dengan lawyer terverifikasi.
               </p>
@@ -62,12 +99,16 @@ export default function Home() {
                   </div>
                 </Button>
               </Link>
-            </div>
+            </motion.div>
           </div>
-        </section>
+        </motion.section>
 
         {/* 2. Services Card */}
-        <section id="services" className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16">
+        <motion.section 
+          id="services"
+          {...fadeInUp}
+          className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16"
+        >
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-10 text-slate-900">Kategori Konsultasi</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
@@ -78,25 +119,37 @@ export default function Home() {
               { title: "Hukum Keluarga", icon: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z", desc: "Perceraian, hak asuh, dan warisan." },
               { title: "Konsultasi Umum", icon: "M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z", desc: "Tanya apa saja terkait hukum secara langsung." }
             ].map((service, i) => (
-              <div key={i} className="bg-slate-50 shadow-sm border border-slate-100 p-6 md:p-8 rounded-[1.5rem] hover:shadow-md hover:bg-white transition duration-300">
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                whileHover={{ y: -6 }}
+                className="bg-slate-50 shadow-sm border border-slate-100 p-6 md:p-8 rounded-[1.5rem] hover:shadow-md hover:bg-white transition duration-300"
+              >
                 <div className="w-10 h-10 bg-[#1D64FB] rounded-full flex items-center justify-center text-white mb-5">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={service.icon}></path></svg>
                 </div>
                 <h3 className="text-lg font-bold mb-2 tracking-tight">{service.title}</h3>
                 <p className="text-slate-500 text-[13px] md:text-[14px] leading-relaxed mb-5">{service.desc}</p>
                 <Link href="#" className="text-[#1D64FB] font-semibold text-[13px] md:text-[14px] flex items-center gap-2 group">
-                  Learn More 
+                  Learn More
                   <div className="w-4 h-4 bg-[#1D64FB]/10 rounded-full flex items-center justify-center group-hover:bg-[#1D64FB] group-hover:text-white transition-all">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"></path></svg>
                   </div>
                 </Link>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </section>
+        </motion.section>
 
         {/* 3. Cara Kerja Card (NEW) */}
-        <section id="how-it-works" className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16">
+        <motion.section 
+          id="how-it-works" 
+          {...fadeInUp}
+          className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16"
+        >
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">Cara Kerja Law Consult</h2>
             <p className="text-slate-600 text-[15px] font-medium max-w-xl mx-auto">
@@ -106,29 +159,40 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8 md:gap-4 relative max-w-5xl mx-auto">
             {/* Connecting line for desktop */}
             <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-[2px] bg-slate-100 z-0"></div>
-            
+
             {[
               { step: "01", title: "Pilih Lawyer & Kategori", desc: "Cari lawyer profesional yang sesuai dengan masalah hukum Anda (Perdata, Pidana, Bisnis, dsb)." },
               { step: "02", title: "Mulai Chat / Konsultasi", desc: "Lakukan pembayaran aman dan langsung terhubung via chat atau video call secara privat." },
               { step: "03", title: "Dapatkan Solusi Hukum", desc: "Diskusikan masalah Anda dan dapatkan dokumen legalitas atau saran hukum yang akurat." }
             ].map((item, i) => (
-              <div key={i} className="relative z-10 flex flex-col items-center text-center px-4">
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.2 }}
+                className="relative z-10 flex flex-col items-center text-center px-4"
+              >
                 <div className="w-24 h-24 rounded-full bg-slate-50 border-8 border-white shadow-sm flex items-center justify-center mb-6">
                   <span className="text-2xl font-black text-[#1D64FB] tracking-tighter">{item.step}</span>
                 </div>
                 <h3 className="text-[17px] font-bold mb-3 text-slate-900">{item.title}</h3>
                 <p className="text-slate-500 text-[14px] leading-relaxed">{item.desc}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </section>
+        </motion.section>
 
         {/* 4. About Us Card */}
-        <section id="about" className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16 grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <motion.section 
+          id="about" 
+          {...fadeInUp}
+          className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16 grid md:grid-cols-2 gap-12 lg:gap-16 items-center"
+        >
           <div className="relative h-[300px] md:h-[400px] rounded-[2rem] overflow-hidden shadow-md">
-            <Image 
-              alt="About Us" 
-              className="object-cover w-full h-full" 
+            <Image
+              alt="About Us"
+              className="object-cover w-full h-full"
               src="/about-bg.png"
               fill
             />
@@ -150,10 +214,14 @@ export default function Home() {
               </div>
             </Button>
           </div>
-        </section>
+        </motion.section>
 
         {/* 5. Our Lawyers Card */}
-        <section id="team" className="bg-white rounded-[3rem] shadow-sm w-full p-6 md:p-10 lg:p-12">
+        <motion.section 
+          id="team" 
+          {...fadeInUp}
+          className="bg-white rounded-[3rem] shadow-sm w-full p-6 md:p-10 lg:p-12"
+        >
           <div className="flex justify-end mb-4">
             <div className="flex gap-2">
               <button className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition">
@@ -192,26 +260,42 @@ export default function Home() {
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* 6. Customer Reviews Card */}
-        <section id="reviews" className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16">
+        <motion.section 
+          id="reviews" 
+          {...fadeInUp}
+          className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16"
+        >
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-10 text-slate-900">Apa Kata Pengguna Law Consult</h2>
           <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <div className="relative h-[300px] md:h-[400px] rounded-[2rem] overflow-hidden shadow-md">
-              <Image 
-                alt="Happy Client" 
-                className="object-cover w-full h-full" 
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="relative h-[300px] md:h-[400px] rounded-[2rem] overflow-hidden shadow-md"
+            >
+              <Image
+                alt="Happy Client"
+                className="object-cover w-full h-full"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCgx_VluFgVD7yu4yBP4FQrb_xDlmAmveieFQgTikabobIh8d-Xd6zNCKlW9M0bWzNw5U6_aKYHfDy4NXVixDYzDlpcQLfajZO98Oeg5MboCgUs0oRL-NZ4COFB3GKwN41a_qMNmhMfhITtn0_6oJQKRihUYKvj4FsaXZoBsr7wba0dQ_9yHBs64IA_PT_RpPaaQ3lrYIvSHY633RjiSrZuQYNG46KUp-oTw-nAtsGhsgIEH5xxIxOi2PgItKqq46pyBy95hJydVk"
                 fill
               />
-            </div>
-            <div className="flex flex-col justify-center pr-0 lg:pr-8">
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="flex flex-col justify-center pr-0 lg:pr-8"
+            >
               <svg className="w-10 h-10 text-slate-200 mb-6" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
               </svg>
               <p className="text-lg md:text-xl text-slate-800 leading-[1.6] font-medium mb-6 tracking-tight">
-                "Law Consult membantu saya mendapatkan solusi hukum dengan cepat tanpa harus datang ke kantor lawyer. Sangat praktis dan profesional."
+                &quot;Law Consult membantu saya mendapatkan solusi hukum dengan cepat tanpa harus datang ke kantor lawyer. Sangat praktis dan profesional.&quot;
               </p>
               <h4 className="font-bold text-[16px] mb-6">Pengguna Law Consult</h4>
               <div className="flex justify-end gap-2">
@@ -222,36 +306,51 @@ export default function Home() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                 </button>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </section>
+        </motion.section>
 
         {/* 7. CTA Section Card */}
-        <section className="bg-[#1D64FB] rounded-[3rem] p-10 md:p-16 text-center text-white relative overflow-hidden shadow-sm">
+        <motion.section 
+          {...fadeInUp}
+          className="bg-[#1D64FB] rounded-[3rem] p-10 md:p-16 text-center text-white relative overflow-hidden shadow-sm"
+        >
           <div className="relative z-10 max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 leading-tight">
+            <motion.h2 
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-3xl md:text-4xl font-bold tracking-tight mb-4 leading-tight"
+            >
               Butuh Jawaban Hukum Sekarang?
-            </h2>
+            </motion.h2>
             <p className="text-blue-100/90 mb-8 text-[15px] max-w-xl mx-auto leading-relaxed">
               Jangan biarkan masalah hukum berlarut. Konsultasikan sekarang juga dengan lawyer profesional.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/register" className="w-full sm:w-auto">
-                <Button className="bg-white text-[#1D64FB] hover:bg-slate-50 rounded-full px-8 py-5 text-[14px] font-bold w-full sm:w-auto">
-                  Start Chat Sekarang
-                </Button>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <Button className="bg-white text-[#1D64FB] hover:bg-slate-50 rounded-full px-8 py-5 text-[14px] font-bold w-full sm:w-auto">
+                    Start Chat Sekarang
+                  </Button>
+                </motion.div>
               </Link>
-              <Button variant="outline" className="border-2 border-white/30 text-white bg-transparent hover:bg-white/10 rounded-full px-8 py-5 text-[14px] font-bold w-full sm:w-auto">
-                Lihat Cara Kerja
-              </Button>
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                <Button variant="outline" className="border-2 border-white/30 text-white bg-transparent hover:bg-white/10 rounded-full px-8 py-5 text-[14px] font-bold w-full sm:w-auto">
+                  Lihat Cara Kerja
+                </Button>
+              </motion.div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
       </main>
 
       {/* 8. Footer Card */}
-      <footer className="bg-white rounded-[3rem] shadow-sm w-full max-w-[1300px] px-8 py-10 md:px-16 md:py-16 mt-2">
+      <motion.footer 
+        {...fadeInUp}
+        className="bg-white rounded-[3rem] shadow-sm w-full max-w-[1300px] px-8 py-10 md:px-16 md:py-16 mt-2"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
           <div className="lg:col-span-2 pr-8">
             <Link href="/" className="flex items-center gap-2 mb-6">
@@ -312,7 +411,7 @@ export default function Home() {
             Law Consult
           </span>
         </div>
-      </footer>
+      </motion.footer>
     </div>
   );
 }
