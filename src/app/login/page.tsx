@@ -228,22 +228,23 @@ export default function LoginPage() {
                   className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1D64FB]/20 focus:border-[#1D64FB] transition pr-12"
                 />
                 {/* Role indicator badge inside input */}
-                <AnimatePresence>
-                  {isLawyer && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
-                        </svg>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                  <AnimatePresence>
+                    {isLawyer && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.5 }}
+                      >
+                        <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
+                          </svg>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
               {/* Demo hint text */}
               <AnimatePresence>

@@ -50,6 +50,13 @@ export default function ReviewPage() {
     });
     localStorage.setItem("lawyer_reviews", JSON.stringify(reviews));
 
+    // Mark booking as reviewed so the "Berikan Ulasan" CTA hides
+    if (savedBookings) {
+      const all = JSON.parse(savedBookings);
+      const updated = all.map((b: any) => b.lawyerId === lawyer.id && b.status === "completed" ? { ...b, clientReviewDone: true } : b);
+      localStorage.setItem("bookings", JSON.stringify(updated));
+    }
+
     setTimeout(() => {
       sessionStorage.setItem("chat_completed", "true");
       router.push("/dashboard");

@@ -26,85 +26,65 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/layout.js"
     ],
-    "/dashboard/lawyers/page": [
+    "/dashboard/template": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/lawyers/page.js"
-    ],
-    "/dashboard/lawyer/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/lawyer/page.js"
-    ],
-    "/register/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/register/page.js"
-    ],
-    "/dashboard/lawyers/[id]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/lawyers/[id]/page.js"
+      "static/chunks/app/dashboard/template.js"
     ],
     "/dashboard/checkout/[id]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/checkout/[id]/page.js"
     ],
+    "/dashboard/active/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/active/page.js"
+    ],
+    "/dashboard/lawyers/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/lawyers/page.js"
+    ],
     "/dashboard/bookings/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/bookings/page.js"
+    ],
+    "/dashboard/lawyer/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/lawyer/page.js"
     ],
     "/dashboard/chat/[id]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/chat/[id]/page.js"
     ],
-    "/dashboard/review/[id]/page": [
+    "/dashboard/chat/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/review/[id]/page.js"
-    ],
-    "/dashboard/template": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/template.js"
+      "static/chunks/app/dashboard/chat/page.js"
     ],
     "/dashboard/lawyer/wallet/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/lawyer/wallet/page.js"
     ],
-    "/dashboard/profile/page": [
+    "/dashboard/review/[id]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/profile/page.js"
-    ],
-    "/dashboard/settings/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/settings/page.js"
-    ],
-    "/dashboard/coming-soon/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/coming-soon/page.js"
+      "static/chunks/app/dashboard/review/[id]/page.js"
     ],
     "/dashboard/lawyer/verification/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/lawyer/verification/page.js"
     ],
-    "/dashboard/detail-profile/[id]/page": [
+    "/register/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/detail-profile/[id]/page.js"
-    ],
-    "/_not-found/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/register/page.js"
     ]
   }
 }

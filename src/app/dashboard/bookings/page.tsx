@@ -39,12 +39,17 @@ export default function BookingsPage() {
       if (saved) {
         const current = JSON.parse(saved) as Booking[];
         setBookings(prev => {
-          // Check if any booking status changed to "accepted"
           for (const booking of current) {
             const old = prev.find(b => b.id === booking.id);
+            // Detect acceptance
             if (old && old.status === "pending" && booking.status === "accepted") {
               setToast({ show: true, message: `Booking Diterima oleh ${booking.lawyerName}! 🎉`, type: "success" });
               setTimeout(() => setToast({ show: false, message: "", type: "info" }), 5000);
+            }
+            // Detect session completed by lawyer (bidirectional)
+            if (old && (old.status === "client_ready" || old.status === "accepted") && booking.status === "completed") {
+              setToast({ show: true, message: `Sesi dengan ${booking.lawyerName} telah selesai. Berikan ulasan Anda!`, type: "success" });
+              setTimeout(() => setToast({ show: false, message: "", type: "info" }), 6000);
             }
           }
           return current;
@@ -87,22 +92,25 @@ export default function BookingsPage() {
 
       {/* Booking List */}
       {bookings.length === 0 ? (
-        <div className="py-20 text-center">
-          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div className="py-20 text-center bg-white rounded-3xl border border-slate-100 shadow-sm">
+          <div className="w-24 h-24 bg-gradient-to-br from-blue-50 to-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100">
+            <svg className="w-12 h-12 text-[#1D64FB] opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           </div>
-          <h2 className="text-lg font-bold text-slate-700 mb-1">Belum ada booking</h2>
-          <p className="text-sm text-slate-500 mb-6">Mulai dengan mencari lawyer dan melakukan booking konsultasi.</p>
-          <Button onClick={() => router.push("/dashboard")} className="bg-[#1D64FB] hover:bg-blue-700 text-white rounded-xl h-10 px-6 text-sm font-bold">
-            Cari Lawyer
+          <h2 className="text-xl font-bold text-slate-800 mb-2">Belum Ada Booking</h2>
+          <p className="text-sm text-slate-400 max-w-sm mx-auto mb-8">Mulai dengan mencari lawyer yang sesuai kebutuhan hukum Anda dan lakukan booking konsultasi pertama.</p>
+          <Button onClick={() => router.push("/dashboard")} className="bg-[#1D64FB] hover:bg-blue-700 text-white rounded-xl h-11 px-8 text-sm font-bold shadow-sm">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            Mulai Cari Lawyer
           </Button>
         </div>
       ) : (
         <div className="space-y-4">
-          {[...bookings].reverse().map((booking) => {
+          {[...bookings].reverse()
+            .filter(booking => booking.status === "completed" || booking.status === "rejected")
+            .map((booking) => {
             const statusConfig = getStatusConfig(booking.status);
             return (
-              <div key={booking.id} className={`bg-white rounded-2xl border p-5 transition-all ${booking.status === "pending" ? "border-yellow-200 shadow-sm shadow-yellow-100" : (booking.status === "accepted" || booking.status === "client_ready") ? "border-green-200 shadow-sm shadow-green-100" : "border-slate-200 shadow-sm"}`}>
+              <div key={booking.id} className="bg-white rounded-2xl border p-5 transition-all border-slate-200 shadow-sm">
                 <div className="flex flex-col sm:flex-row gap-4">
                   {/* Lawyer Info */}
                   <div className="flex items-center gap-4 flex-1">
@@ -122,81 +130,12 @@ export default function BookingsPage() {
                   {/* Status & Actions */}
                   <div className="flex flex-col items-end gap-3 shrink-0">
                     <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${statusConfig.color}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot} ${booking.status === "pending" ? "animate-pulse" : ""}`}></span>
+                      <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot}`}></span>
                       {statusConfig.label}
                     </div>
                     <p className="text-sm font-black text-slate-900">{booking.price}</p>
                   </div>
                 </div>
-
-                {/* Pending State: Waiting message */}
-                {booking.status === "pending" && (
-                  <div className="mt-4 pt-4 border-t border-yellow-100">
-                    <div className="flex items-center gap-3 p-3 bg-yellow-50/50 rounded-xl">
-                      <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
-                        <span className="text-sm">⏳</span>
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-yellow-700">Menunggu Konfirmasi Lawyer...</p>
-                        <p className="text-[11px] text-yellow-600/80 mt-0.5">Lawyer Anda sedang meninjau permintaan. Mohon tunggu notifikasi.</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Accepted State: Enter Chat button */}
-                {booking.status === "accepted" && (
-                  <div className="mt-4 pt-4 border-t border-green-100">
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                          <span className="text-sm">✅</span>
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-green-700">Booking Anda telah diterima!</p>
-                          <p className="text-[11px] text-green-600/80 mt-0.5">Silakan masuk ke ruang chat untuk memulai konsultasi.</p>
-                        </div>
-                      </div>
-                      <Button 
-                        onClick={() => {
-                          const saved = localStorage.getItem("bookings");
-                          if (saved) {
-                            const all = JSON.parse(saved);
-                            const updated = all.map((b: any) => b.id === booking.id ? { ...b, status: "client_ready" } : b);
-                            localStorage.setItem("bookings", JSON.stringify(updated));
-                          }
-                          router.push(`/dashboard/chat/${booking.lawyerId}`);
-                        }}
-                        className="bg-[#1D64FB] hover:bg-blue-700 text-white rounded-xl h-10 px-6 text-[13px] font-bold shadow-sm animate-pulse w-full sm:w-auto"
-                      >
-                        Masuk Ruang Chat →
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                {/* Client Ready State */}
-                {booking.status === "client_ready" && (
-                  <div className="mt-4 pt-4 border-t border-blue-100">
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                          <span className="text-sm">💬</span>
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-blue-700">Menunggu lawyer memasuki ruang chat.</p>
-                          <p className="text-[11px] text-blue-600/80 mt-0.5">Anda dapat masuk kembali ke ruang chat kapan saja.</p>
-                        </div>
-                      </div>
-                      <Button 
-                        onClick={() => router.push(`/dashboard/chat/${booking.lawyerId}`)}
-                        variant="outline"
-                        className="border-blue-200 text-[#1D64FB] hover:bg-blue-50 rounded-xl h-10 px-6 text-[13px] font-bold shadow-sm w-full sm:w-auto"
-                      >
-                        Masuk Ulang →
-                      </Button>
-                    </div>
-                  </div>
-                )}
 
                 {/* Rejected State */}
                 {booking.status === "rejected" && (
@@ -209,6 +148,32 @@ export default function BookingsPage() {
                         <p className="text-xs font-bold text-red-600">Booking ditolak oleh Lawyer.</p>
                         <p className="text-[11px] text-red-500/80 mt-0.5">Dana Anda akan dikembalikan secara otomatis (Simulasi Refund).</p>
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Completed State: Review CTA */}
+                {booking.status === "completed" && (
+                  <div className="mt-4 pt-4 border-t border-slate-100">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-700">Konsultasi telah selesai.</p>
+                          <p className="text-[11px] text-slate-400 mt-0.5">Terima kasih telah menggunakan LawConsult.</p>
+                        </div>
+                      </div>
+                      {!(booking as any).clientReviewDone && (
+                        <Button 
+                          onClick={() => router.push(`/dashboard/review/${booking.lawyerId}`)}
+                          variant="outline"
+                          className="border-yellow-200 text-yellow-600 hover:bg-yellow-50 rounded-xl h-10 px-6 text-[13px] font-bold shadow-sm w-full sm:w-auto"
+                        >
+                          ⭐ Berikan Ulasan
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )}

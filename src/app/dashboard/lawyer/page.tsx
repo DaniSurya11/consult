@@ -83,6 +83,7 @@ export default function LawyerDashboard() {
   const [countdown, setCountdown] = useState(15*60); // 15 min countdown for active session
   const [pendingBookings, setPendingBookings] = useState<any[]>([]);
   const [activeBookings, setActiveBookings] = useState<any[]>([]);
+  const [completedNotifs, setCompletedNotifs] = useState<any[]>([]);
   const [completedBookingsCount, setCompletedBookingsCount] = useState(8);
   const [averageRating, setAverageRating] = useState("4.9");
   const [totalReviews, setTotalReviews] = useState(128);
@@ -90,6 +91,8 @@ export default function LawyerDashboard() {
   const [bookingToast, setBookingToast] = useState<{ show: boolean; message: string }>({ show: false, message: "" });
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadReviews, setUnreadReviews] = useState<any[]>([]);
+  const [dynamicConsultations, setDynamicConsultations] = useState<any[]>([]);
+  const [dynamicSchedule, setDynamicSchedule] = useState<any[]>([]);
   const fade = {initial:{opacity:0,y:12},animate:{opacity:1,y:0}};
 
   useEffect(() => {
@@ -116,17 +119,42 @@ export default function LawyerDashboard() {
             }
             return pending;
           });
-          const active = all.filter((b: any) => b.status === "accepted" || b.status === "client_ready");
+          
+          // Only show client_ready as active (client already entered chat)
+          const active = all.filter((b: any) => b.status === "client_ready");
           setActiveBookings(active);
           
+          // Map to dynamic widgets for Konsultasi Terbaru & Jadwal Hari Ini
+          const ongoingBookings = all.filter((b: any) => b.status === "accepted" || b.status === "client_ready");
+          setDynamicConsultations(ongoingBookings.map((b: any) => ({
+            name: b.clientName || "Ahmad Rizky",
+            type: "Chat",
+            time: "Baru saja",
+            msg: b.status === "client_ready" ? "Klien sudah di dalam chat room." : "Menunggu klien masuk ruang chat.",
+            unread: b.status === "client_ready" ? 1 : 0,
+            avatar: "https://i.pravatar.cc/100?u=" + b.id,
+            lawyerId: b.lawyerId
+          })));
+          
+          setDynamicSchedule(ongoingBookings.map((b: any) => ({
+            time: "Segera",
+            name: b.clientName || "Ahmad Rizky",
+            desc: b.lawyerSpecialty || "Konsultasi Hukum",
+            status: b.status === "client_ready" ? "Berlangsung" : "Menunggu",
+            color: b.status === "client_ready" ? "bg-blue-50 text-[#1D64FB]" : "bg-orange-50 text-orange-500",
+          })));
+          
           const completedCount = all.filter((b: any) => b.status === "completed").length;
-          // Set to base 8 + newly completed
           setCompletedBookingsCount(8 + completedCount);
 
-          // Check if there's a newly completed session to notify the lawyer
+          // Collect completed sessions that lawyer hasn't seen yet (for bell notification)
+          const unseenCompleted = all.filter((b: any) => b.status === "completed" && !b.lawyerSeenCompleted);
+          setCompletedNotifs(unseenCompleted);
+
+          // Toast for newly completed session
           const newlyCompleted = all.find((b: any) => b.status === "completed" && !b.lawyerNotifiedCompleted);
           if (newlyCompleted) {
-            setBookingToast({ show: true, message: `Sesi dengan ${newlyCompleted.clientName || 'Klien'} telah selesai!` });
+            setBookingToast({ show: true, message: `Sesi dengan ${newlyCompleted.clientName || 'Klien'} telah selesai! Pendapatan ditambahkan ke dompet.` });
             setTimeout(() => setBookingToast({ show: false, message: "" }), 5000);
             
             const updated = all.map((b: any) => b.id === newlyCompleted.id ? { ...b, lawyerNotifiedCompleted: true } : b);
@@ -146,7 +174,6 @@ export default function LawyerDashboard() {
           setRecentReviews(reviews);
           setTotalReviews(128 + reviews.length);
           
-          // calculate average
           let sum = 4.9 * 128;
           for (let r of reviews) sum += r.rating;
           setAverageRating((sum / (128 + reviews.length)).toFixed(1));
@@ -213,20 +240,44 @@ export default function LawyerDashboard() {
   // Saran #1: Skeleton Loader component
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 animate-pulse">
+      <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
         {/* Skeleton Hero */}
-        <div className="bg-white rounded-[2rem] h-[120px] shadow-sm" />
+        <div className="bg-white rounded-[2rem] h-[120px] shadow-sm border border-slate-100 flex items-center justify-between p-6">
+          <div className="space-y-3">
+            <div className="h-6 w-48 bg-slate-100 rounded-lg animate-pulse"></div>
+            <div className="h-4 w-72 bg-slate-100 rounded-lg animate-pulse"></div>
+          </div>
+          <div className="flex gap-4">
+            <div className="w-10 h-10 bg-slate-100 rounded-full animate-pulse"></div>
+            <div className="w-32 h-10 bg-slate-100 rounded-full animate-pulse"></div>
+          </div>
+        </div>
         {/* Skeleton Stat Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1,2,3,4].map(i => <div key={i} className="bg-white rounded-2xl h-[100px] shadow-sm" />)}
+          {[1,2,3,4].map(i => (
+            <div key={i} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
+              <div className="flex gap-4 items-start">
+                <div className="w-11 h-11 bg-slate-100 rounded-xl animate-pulse"></div>
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-full bg-slate-100 rounded-md animate-pulse"></div>
+                  <div className="h-6 w-1/2 bg-slate-100 rounded-md animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
         {/* Skeleton Middle Row */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => <div key={i} className="bg-white rounded-2xl h-[300px] shadow-sm" />)}
-        </div>
-        {/* Skeleton Bottom Row */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => <div key={i} className="bg-white rounded-2xl h-[260px] shadow-sm" />)}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 bg-white rounded-3xl h-[300px] shadow-sm border border-slate-100 p-6 space-y-4">
+            <div className="h-5 w-40 bg-slate-100 rounded-lg animate-pulse"></div>
+            <div className="space-y-3">
+              {[1,2,3].map(i => <div key={i} className="h-16 w-full bg-slate-50 rounded-xl animate-pulse"></div>)}
+            </div>
+          </div>
+          <div className="bg-white rounded-3xl h-[300px] shadow-sm border border-slate-100 p-6 space-y-4">
+            <div className="h-5 w-32 bg-slate-100 rounded-lg animate-pulse"></div>
+            <div className="w-full h-40 bg-slate-50 rounded-full animate-pulse"></div>
+          </div>
         </div>
       </div>
     );
@@ -275,9 +326,9 @@ export default function LawyerDashboard() {
                 <div className="relative">
                   <button onClick={() => setShowNotifications(!showNotifications)} className="relative w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-[#1D64FB] hover:bg-slate-50 transition-colors">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                    {(pendingBookings.length + unreadReviews.length) > 0 && (
+                    {(pendingBookings.length + unreadReviews.length + completedNotifs.length) > 0 && (
                       <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white text-white text-[8px] font-bold flex items-center justify-center animate-pulse">
-                        {pendingBookings.length + unreadReviews.length}
+                        {pendingBookings.length + unreadReviews.length + completedNotifs.length}
                       </span>
                     )}
                   </button>
@@ -286,11 +337,41 @@ export default function LawyerDashboard() {
                   {showNotifications && (
                     <div className="absolute top-12 right-0 w-80 bg-white border border-slate-100 shadow-xl rounded-2xl z-[999]">
                       <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-t-2xl">
-                        <h3 className="text-[13px] font-bold text-slate-900">Notifikasi</h3>
-                        <span className="text-[11px] font-semibold text-[#1D64FB] bg-blue-50 px-2 py-0.5 rounded-md">{pendingBookings.length + unreadReviews.length} Baru</span>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-[13px] font-bold text-slate-900">Notifikasi</h3>
+                          {(pendingBookings.length + unreadReviews.length + completedNotifs.length) > 0 && <span className="text-[11px] font-semibold text-[#1D64FB] bg-blue-50 px-2 py-0.5 rounded-md">{pendingBookings.length + unreadReviews.length + completedNotifs.length} Baru</span>}
+                        </div>
+                        {(pendingBookings.length + unreadReviews.length + completedNotifs.length) > 0 && (
+                          <button 
+                            onClick={() => {
+                              // Mark reviews as read
+                              const savedReviews = localStorage.getItem("lawyer_reviews");
+                              if (savedReviews) {
+                                const reviews = JSON.parse(savedReviews);
+                                const updated = reviews.map((rev: any) => ({ ...rev, seenInNotification: true }));
+                                localStorage.setItem("lawyer_reviews", JSON.stringify(updated));
+                                setUnreadReviews([]);
+                              }
+                              
+                              // Clear completed notifs and pending seen flag
+                              const saved = localStorage.getItem("bookings");
+                              if (saved) {
+                                let all = JSON.parse(saved);
+                                all = all.map((b: any) => ({ ...b, lawyerSeenCompleted: true, lawyerSeenPendingNotif: true }));
+                                localStorage.setItem("bookings", JSON.stringify(all));
+                                setCompletedNotifs([]);
+                                // We do NOT setPendingBookings([]) because that would hide them from the dashboard widget
+                              }
+                              setShowNotifications(false);
+                            }}
+                            className="text-[11px] font-bold text-[#1D64FB] hover:underline"
+                          >
+                            Tandai semua dibaca
+                          </button>
+                        )}
                       </div>
                       <div className="max-h-[320px] overflow-y-auto">
-                        {pendingBookings.length === 0 && unreadReviews.length === 0 ? (
+                        {pendingBookings.length === 0 && unreadReviews.length === 0 && completedNotifs.length === 0 ? (
                           <div className="px-4 py-10 text-center flex flex-col items-center gap-2">
                             <svg className="w-8 h-8 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                             <p className="text-[12px] font-medium text-slate-400">Semua notifikasi sudah dibaca</p>
@@ -310,15 +391,15 @@ export default function LawyerDashboard() {
                               </div>
                             ))}
                             {unreadReviews.map((r: any, idx: number) => (
-                              <div key={`r-${idx}`} onClick={() => {
+                              <div key={`r-${r.id || idx}`} onClick={() => {
                                 setShowNotifications(false);
                                 try {
                                   const saved = localStorage.getItem("lawyer_reviews");
                                   if (saved) {
                                     const reviews = JSON.parse(saved);
-                                    const updated = reviews.map((rev: any, i: number) => i === idx ? { ...rev, seenInNotification: true } : rev);
+                                    const updated = reviews.map((rev: any) => rev.id === r.id ? { ...rev, seenInNotification: true } : rev);
                                     localStorage.setItem("lawyer_reviews", JSON.stringify(updated));
-                                    setUnreadReviews(prev => prev.filter((_, i) => i !== idx));
+                                    setUnreadReviews(prev => prev.filter(rev => rev.id !== r.id));
                                   }
                                 } catch(e) {}
                               }} className="px-4 py-3 hover:bg-yellow-50/40 border-b border-slate-100 cursor-pointer transition flex gap-3">
@@ -329,6 +410,29 @@ export default function LawyerDashboard() {
                                   <p className="text-[13px] font-bold text-slate-900 mb-0.5">Ulasan Baru Masuk</p>
                                   <p className="text-[11px] text-slate-500">Klien <span className="font-semibold text-slate-700">{r.name}</span> memberi <span className="text-yellow-500 font-bold">{r.rating} bintang</span>.</p>
                                   <span className="inline-block mt-1 text-[10px] bg-yellow-50 text-yellow-600 font-bold px-2 py-0.5 rounded-full">{r.date || "Baru saja"}</span>
+                                </div>
+                              </div>
+                            ))}
+                            {completedNotifs.map((notif: any, idx: number) => (
+                              <div key={`c-${idx}`} onClick={() => {
+                                setShowNotifications(false);
+                                // Mark as seen
+                                const saved = localStorage.getItem("bookings");
+                                if (saved) {
+                                  const all = JSON.parse(saved);
+                                  const updated = all.map((b: any) => b.id === notif.id ? { ...b, lawyerSeenCompleted: true } : b);
+                                  localStorage.setItem("bookings", JSON.stringify(updated));
+                                  setCompletedNotifs(prev => prev.filter(n => n.id !== notif.id));
+                                }
+                                router.push("/dashboard/lawyer/wallet");
+                              }} className="px-4 py-3 hover:bg-green-50/40 border-b border-slate-100 cursor-pointer transition flex gap-3">
+                                <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[13px] font-bold text-slate-900 mb-0.5">Sesi Selesai ✅</p>
+                                  <p className="text-[11px] text-slate-500">Konsultasi dengan <span className="font-semibold text-slate-700">{notif.clientName || "Klien"}</span> telah selesai. Pendapatan masuk ke dompet.</p>
+                                  <span className="inline-block mt-1 text-[10px] bg-green-50 text-green-600 font-bold px-2 py-0.5 rounded-full">Baru saja</span>
                                 </div>
                               </div>
                             ))}
@@ -359,85 +463,6 @@ export default function LawyerDashboard() {
         </Card>
       </motion.div>
 
-      {/* NEW: Permintaan Booking Baru */}
-      {pendingBookings.length > 0 && (
-        <motion.div {...fade} transition={{delay:0.05}}>
-          <Card className="border-2 border-yellow-200 shadow-sm shadow-yellow-100 bg-white rounded-[2rem] overflow-hidden">
-            <CardHeader className="pb-2 flex-row items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 bg-yellow-500 rounded-full animate-pulse"></div>
-                <CardTitle className="text-[15px] font-bold text-slate-900">Permintaan Baru ({pendingBookings.length})</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {pendingBookings.map((booking) => (
-                <div key={booking.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-yellow-50/50 rounded-xl border border-yellow-100">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-full bg-[#1D64FB] flex items-center justify-center text-white font-bold text-sm shrink-0">
-                      {booking.clientName?.charAt(0) || "A"}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-bold text-slate-900">{booking.clientName || "Ahmad Rizky"}</p>
-                      <p className="text-[11px] text-slate-500">{booking.lawyerSpecialty} • {booking.price}</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">{new Date(booking.createdAt).toLocaleString("id-ID")}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 shrink-0 w-full sm:w-auto">
-                    <Button onClick={() => rejectBooking(booking.id)} variant="outline" className="flex-1 sm:flex-initial border-red-200 text-red-500 hover:bg-red-50 rounded-xl h-9 text-xs font-bold px-4">
-                      Tolak
-                    </Button>
-                    <Button onClick={() => acceptBooking(booking.id)} className="flex-1 sm:flex-initial bg-green-500 hover:bg-green-600 text-white rounded-xl h-9 text-xs font-bold px-4">
-                      ✓ Terima
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* NEW: Sesi Aktif (Berlangsung) */}
-      {activeBookings.length > 0 && (
-        <motion.div {...fade} transition={{delay:0.07}}>
-          <Card className="border-2 border-green-200 shadow-sm shadow-green-100 bg-white rounded-[2rem] overflow-hidden">
-            <CardHeader className="pb-2 flex-row items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
-                <CardTitle className="text-[15px] font-bold text-slate-900">Sesi Menunggu Chat ({activeBookings.length})</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {activeBookings.map((booking) => (
-                <div key={booking.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-green-50/50 rounded-xl border border-green-100">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-full bg-[#1D64FB] flex items-center justify-center text-white font-bold text-sm shrink-0">
-                      {booking.clientName?.charAt(0) || "A"}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-bold text-slate-900">{booking.clientName || "Ahmad Rizky"}</p>
-                      <p className="text-[11px] text-slate-500">{booking.lawyerSpecialty} • {booking.price}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto">
-                    {booking.status === "accepted" ? (
-                      <div className="px-3 py-1.5 bg-yellow-50 text-yellow-600 rounded-lg text-[11px] font-bold flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span>
-                        Menunggu Klien...
-                      </div>
-                    ) : (
-                      <Button onClick={() => router.push(`/dashboard/chat/${booking.lawyerId}`)} className="bg-[#1D64FB] hover:bg-blue-700 text-white rounded-xl h-9 text-xs font-bold px-4 animate-bounce">
-                        Masuk Ruang Chat
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
       {/* Booking Toast */}
       <AnimatePresence>
         {bookingToast.show && (
@@ -466,8 +491,8 @@ export default function LawyerDashboard() {
       {/* 2. Stat Cards Row — Ronde 2: Tactile + Sparklines */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          {label:"Konsultasi Aktif",value:"12",sub:"↑ 20% dari bulan lalu",subColor:"text-green-500",iconBg:"bg-blue-50",iconColor:"text-[#1D64FB]",icon:"M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z",spark:sparklines.konsultasi,sparkColor:"#1D64FB"},
-          {label:"Jadwal Hari Ini",value:"3",sub:"Lihat jadwal Anda",subColor:"text-[#1D64FB]",iconBg:"bg-blue-50",iconColor:"text-[#1D64FB]",icon:"M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",spark:sparklines.jadwal,sparkColor:"#1D64FB"},
+          {label:"Konsultasi Aktif",value:(12 + activeBookings.length).toString(),sub:"↑ 20% dari bulan lalu",subColor:"text-green-500",iconBg:"bg-blue-50",iconColor:"text-[#1D64FB]",icon:"M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z",spark:sparklines.konsultasi,sparkColor:"#1D64FB"},
+          {label:"Jadwal Hari Ini",value:(3 + pendingBookings.length + activeBookings.length).toString(),sub:"Lihat jadwal Anda",subColor:"text-[#1D64FB]",iconBg:"bg-blue-50",iconColor:"text-[#1D64FB]",icon:"M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",spark:sparklines.jadwal,sparkColor:"#1D64FB"},
           {label:"Konsultasi Selesai",value:completedBookingsCount.toString(),sub:"Lihat semua kasus",subColor:"text-[#1D64FB]",iconBg:"bg-green-50",iconColor:"text-green-500",icon:"M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",spark:sparklines.kasus,sparkColor:"#22c55e"},
           {label:"Rating Saya",value:averageRating,sub:`Dari ${totalReviews} ulasan`,subColor:"text-slate-400",iconBg:"bg-yellow-50",iconColor:"text-yellow-500",icon:"M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z",spark:sparklines.rating,sparkColor:"#eab308"},
         ].map((s,i)=>(
@@ -521,23 +546,27 @@ export default function LawyerDashboard() {
           <Card className="border-0 shadow-sm bg-white rounded-2xl h-full">
             <CardHeader className="pb-2 flex-row items-center justify-between">
               <CardTitle className="text-[15px] font-bold text-slate-900">Konsultasi Terbaru</CardTitle>
-              <button className="text-[12px] font-bold text-[#1D64FB] hover:underline">Kelola Semua</button>
+              <button className="text-[12px] font-bold text-[#1D64FB] hover:underline" onClick={() => router.push('/dashboard/active')}>Kelola Semua</button>
             </CardHeader>
             <CardContent className="space-y-1">
-              {consultations.map((c,i)=>(
-                <div key={i} className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition cursor-pointer group">
-                  <Avatar className="w-9 h-9 shrink-0"><AvatarImage src={c.avatar} alt={c.name} loading="lazy"/><AvatarFallback>{c.name[0]}</AvatarFallback></Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-[13px] font-bold text-slate-900 truncate group-hover:text-[#1D64FB] transition">{c.name}</p>
-                      <Badge className="text-[9px] px-1.5 py-0 font-bold rounded-md bg-blue-50 text-[#1D64FB] border-blue-100">{c.type}</Badge>
-                      <span className="text-[10px] text-slate-400 ml-auto font-medium shrink-0">{c.time}</span>
+              {dynamicConsultations.length > 0 ? (
+                dynamicConsultations.map((c,i)=>(
+                  <div key={i} onClick={() => c.unread > 0 ? router.push(`/dashboard/chat/${c.lawyerId}`) : null} className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition cursor-pointer group">
+                    <Avatar className="w-9 h-9 shrink-0"><AvatarImage src={c.avatar} alt={c.name} loading="lazy"/><AvatarFallback>{c.name[0]}</AvatarFallback></Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-[13px] font-bold text-slate-900 truncate group-hover:text-[#1D64FB] transition">{c.name}</p>
+                        <Badge className="text-[9px] px-1.5 py-0 font-bold rounded-md bg-blue-50 text-[#1D64FB] border-blue-100">{c.type}</Badge>
+                        <span className="text-[10px] text-slate-400 ml-auto font-medium shrink-0">{c.time}</span>
+                      </div>
+                      <p className="text-[12px] text-slate-400 truncate mt-0.5">{c.msg}</p>
                     </div>
-                    <p className="text-[12px] text-slate-400 truncate mt-0.5">{c.msg}</p>
+                    {c.unread>0&&<div className="w-5 h-5 rounded-full bg-[#1D64FB] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-1">{c.unread}</div>}
                   </div>
-                  {c.unread>0&&<div className="w-5 h-5 rounded-full bg-[#1D64FB] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-1">{c.unread}</div>}
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="p-6 text-center text-slate-400 text-[12px]">Belum ada konsultasi terbaru.</div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -547,26 +576,30 @@ export default function LawyerDashboard() {
           <Card className="border-0 shadow-sm bg-white rounded-2xl h-full">
             <CardHeader className="pb-2 flex-row items-center justify-between">
               <CardTitle className="text-[15px] font-bold text-slate-900">Jadwal Hari Ini</CardTitle>
-              <button className="text-[12px] font-bold text-[#1D64FB] hover:underline">Lihat semua</button>
+              <button className="text-[12px] font-bold text-[#1D64FB] hover:underline" onClick={() => router.push('/dashboard/active')}>Lihat semua</button>
             </CardHeader>
             <CardContent className="space-y-1">
-              {schedule.map((s,i)=>(
-                <div key={i} className="p-3 rounded-xl hover:bg-slate-50 transition">
-                  <p className="text-[11px] text-slate-400 font-semibold mb-1">{s.time}</p>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[13px] font-bold text-slate-900">{s.name}</p>
-                      <p className="text-[11px] text-slate-400">{s.desc}</p>
-                      {/* Ronde 2: Live Countdown untuk sesi berlangsung */}
-                      {s.status==="Berlangsung"&&<p className="text-[10px] text-[#1D64FB] font-bold mt-0.5 animate-pulse">⏱ Selesai dalam {formatCountdown(countdown)}</p>}
+              {dynamicSchedule.length > 0 ? (
+                dynamicSchedule.map((s,i)=>(
+                  <div key={i} className="p-3 rounded-xl hover:bg-slate-50 transition cursor-pointer" onClick={() => router.push('/dashboard/active')}>
+                    <p className="text-[11px] text-slate-400 font-semibold mb-1">{s.time}</p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[13px] font-bold text-slate-900">{s.name}</p>
+                        <p className="text-[11px] text-slate-400">{s.desc}</p>
+                        {/* Ronde 2: Live Countdown untuk sesi berlangsung */}
+                        {s.status==="Berlangsung"&&<p className="text-[10px] text-[#1D64FB] font-bold mt-0.5 animate-pulse">⏱ Berjalan: {formatCountdown(countdown)}</p>}
+                      </div>
+                      <Badge className={`text-[10px] font-bold rounded-lg border-0 ${s.color}`}>{s.status}</Badge>
                     </div>
-                    <Badge className={`text-[10px] font-bold rounded-lg border-0 ${s.color}`}>{s.status}</Badge>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="p-6 text-center text-slate-400 text-[12px]">Tidak ada jadwal aktif hari ini.</div>
+              )}
               <Separator className="my-2"/>
               {/* Saran #2: Micro-copy otoritatif */}
-              <Button variant="outline" className="w-full rounded-xl border-dashed border-slate-200 text-slate-500 hover:text-[#1D64FB] hover:border-[#1D64FB] font-bold text-[13px] h-10">+ Tambah Jadwal Konsultasi</Button>
+              <Button onClick={() => router.push('/dashboard/active')} variant="outline" className="w-full rounded-xl border-dashed border-slate-200 text-slate-500 hover:text-[#1D64FB] hover:border-[#1D64FB] font-bold text-[13px] h-10">Lihat Permintaan Masuk</Button>
             </CardContent>
           </Card>
         </motion.div>
@@ -584,9 +617,28 @@ export default function LawyerDashboard() {
             <CardContent>
               {recentReviews.length > 0 ? (
                 <div className="space-y-4">
-                  {recentReviews.slice(0, 2).map((r, i) => (
-                    <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-100 relative">
-                      {i === 0 && <span className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>}
+                  {recentReviews.slice(0, 2).map((r: any, i: number) => (
+                    <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-100 relative group">
+                      {!r.seenInNotification && (
+                        <div className="absolute -top-2 -right-2 flex items-center gap-2">
+                          <button 
+                            onClick={() => {
+                              const savedReviews = localStorage.getItem("lawyer_reviews");
+                              if (savedReviews) {
+                                const reviews = JSON.parse(savedReviews);
+                                const updated = reviews.map((rev: any) => rev.id === r.id ? { ...rev, seenInNotification: true } : rev);
+                                localStorage.setItem("lawyer_reviews", JSON.stringify(updated));
+                                setRecentReviews(updated);
+                                setUnreadReviews(updated.filter((rev: any) => !rev.seenInNotification));
+                              }
+                            }}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity bg-white text-[10px] font-bold text-[#1D64FB] px-2 py-0.5 rounded-full border border-slate-200 shadow-sm hover:bg-slate-50"
+                          >
+                            Tandai Dibaca
+                          </button>
+                          <span className="w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                        </div>
+                      )}
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-8 h-8 rounded-full bg-[#1D64FB] flex items-center justify-center text-white font-bold text-xs shrink-0">
                           {r.name?.charAt(0) || "A"}
@@ -594,7 +646,7 @@ export default function LawyerDashboard() {
                         <div className="flex-1"><p className="text-[13px] font-bold text-slate-900">{r.name}</p></div>
                         <div className="flex items-center gap-1">
                           {[1,2,3,4,5].map(s=><svg key={s} className={`w-3.5 h-3.5 ${s <= r.rating ? 'text-yellow-400' : 'text-slate-200'}`} fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>)}
-                          <span className="text-[11px] text-slate-400 font-medium ml-1">{r.rating.toFixed(1)}</span>
+                          <span className="text-[11px] text-slate-400 font-medium ml-1">{r.rating?.toFixed(1) || "5.0"}</span>
                         </div>
                         <span className="text-[10px] text-slate-400">{r.date}</span>
                       </div>

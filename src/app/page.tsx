@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
@@ -20,23 +21,27 @@ const staggerContainer = {
 };
 
 export default function Home() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 overflow-x-hidden font-sans p-4 md:p-6 flex flex-col gap-4 md:gap-6 items-center">
+    <div className="min-h-screen bg-slate-100 text-slate-900 overflow-x-hidden font-sans p-4 md:p-6 flex flex-col gap-4 md:gap-6 items-center relative">
       {/* Navbar Card */}
       <motion.div 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="bg-white rounded-[2rem] shadow-sm w-full max-w-[1300px] z-50"
+        className="bg-white rounded-[2rem] shadow-sm w-full max-w-[1300px] z-50 relative"
       >
-        <header className="px-6 py-4 flex items-center justify-between w-full">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 text-[#0F172A]">
+        <header className="px-5 md:px-6 py-4 flex items-center justify-between w-full">
+          <Link href="/" className="flex items-center gap-1.5 md:gap-2 shrink-0">
+            <div className="w-7 h-7 md:w-8 md:h-8 text-[#0F172A]">
               <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM3.89 9L12 4.57 20.11 9 12 13.43 3.89 9zM12 17a3 3 0 100 6 3 3 0 000-6zm0 4a1 1 0 110-2 1 1 0 010 2z"></path>
               </svg>
             </div>
-            <span className="text-xl font-bold tracking-tight text-[#0F172A]">Law Consult</span>
+            <span className="text-lg md:text-xl font-bold tracking-tight text-[#0F172A]">Law Consult</span>
           </Link>
+          
+          {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-10 text-[14px] font-semibold text-slate-600">
             <Link href="#home" className="hover:text-slate-900 transition">Beranda</Link>
             <Link href="#services" className="hover:text-slate-900 transition">Layanan</Link>
@@ -45,15 +50,58 @@ export default function Home() {
             <Link href="#team" className="hover:text-slate-900 transition">Tim Lawyer</Link>
             <Link href="#reviews" className="hover:text-slate-900 transition">Ulasan</Link>
           </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="hidden md:flex text-[14px] font-semibold text-slate-600 hover:text-slate-900 transition">
+
+          {/* Desktop Auth */}
+          <div className="hidden lg:flex items-center gap-4 shrink-0">
+            <Link href="/login" className="text-[14px] font-semibold text-slate-600 hover:text-slate-900 transition">
               Login
             </Link>
-            <Link href="/register" className="px-5 py-2 bg-[#1D64FB] text-white rounded-full text-[14px] font-semibold hover:bg-blue-700 transition shadow-sm">
+            <Link href="/register" className="px-5 py-2.5 bg-[#1D64FB] text-white rounded-full text-[14px] font-semibold hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
               Mulai Konsultasi
             </Link>
           </div>
+
+          {/* Mobile Hamburger Button */}
+          <button 
+            className="lg:hidden p-2 -mr-2 text-slate-600 hover:text-slate-900 transition"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle Menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {isMobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
+              )}
+            </svg>
+          </button>
         </header>
+
+        {/* Mobile Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="lg:hidden absolute top-full left-0 right-0 bg-white rounded-b-[2rem] shadow-xl border-t border-slate-100 p-6 flex flex-col gap-6 z-50 mt-1"
+          >
+            <nav className="flex flex-col gap-4 text-[15px] font-semibold text-slate-600">
+              <Link href="#home" onClick={() => setIsMobileMenuOpen(false)}>Beranda</Link>
+              <Link href="#services" onClick={() => setIsMobileMenuOpen(false)}>Layanan</Link>
+              <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)}>Cara Kerja</Link>
+              <Link href="#about" onClick={() => setIsMobileMenuOpen(false)}>Tentang</Link>
+              <Link href="#team" onClick={() => setIsMobileMenuOpen(false)}>Tim Lawyer</Link>
+              <Link href="#reviews" onClick={() => setIsMobileMenuOpen(false)}>Ulasan</Link>
+            </nav>
+            <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
+              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-center py-3 text-[15px] font-semibold text-slate-600 border border-slate-200 rounded-full hover:bg-slate-50 transition">
+                Login
+              </Link>
+              <Link href="/register" onClick={() => setIsMobileMenuOpen(false)} className="text-center py-3 bg-[#1D64FB] text-white rounded-full text-[15px] font-semibold shadow-sm hover:bg-blue-700 transition">
+                Mulai Konsultasi
+              </Link>
+            </div>
+          </motion.div>
+        )}
       </motion.div>
 
       <main className="w-full max-w-[1300px] flex flex-col gap-4 md:gap-6 flex-grow">
@@ -70,7 +118,7 @@ export default function Home() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-center leading-tight mb-8 md:mb-10 text-slate-900 mt-0"
+            className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-center leading-tight mb-8 md:mb-10 text-slate-900 mt-0"
           >
             Lawyer Profesional Online
           </motion.h1>
@@ -86,19 +134,25 @@ export default function Home() {
               initial={{ x: -50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.8 }}
-              className="absolute bottom-4 left-4 md:bottom-8 md:left-8 bg-white p-6 md:p-8 rounded-3xl max-w-[340px] shadow-2xl"
+              className="absolute bottom-3 left-3 right-3 md:right-auto md:bottom-8 md:left-8 max-w-none md:max-w-[340px]"
             >
-              <p className="text-[14px] text-slate-800 font-medium mb-6 leading-relaxed">
-                Konsultasi hukum cepat, privat, langsung dengan lawyer terverifikasi.
-              </p>
-              <Link href="/register" className="w-full">
-                <Button className="bg-[#1D64FB] hover:bg-blue-700 text-white rounded-2xl px-6 py-5 text-[14px] font-semibold flex items-center gap-2 w-full justify-center">
-                  Start Chat Sekarang
-                  <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center ml-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"></path></svg>
-                  </div>
-                </Button>
-              </Link>
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="bg-white/95 md:bg-white/90 backdrop-blur-xl p-5 md:p-8 rounded-3xl shadow-2xl border border-white/30"
+              >
+                <p className="text-[12px] md:text-[14px] text-slate-800 font-medium mb-4 md:mb-6 leading-relaxed">
+                  Konsultasi hukum cepat, privat, langsung dengan lawyer terverifikasi.
+                </p>
+                <Link href="/register" className="w-full">
+                  <Button className="bg-[#1D64FB] hover:bg-blue-700 text-white rounded-2xl px-4 py-4 md:px-6 md:py-5 text-[13px] md:text-[14px] font-semibold flex items-center gap-2 w-full justify-center h-auto">
+                    Start Chat Sekarang
+                    <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center ml-1 shrink-0">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                  </Button>
+                </Link>
+              </motion.div>
             </motion.div>
           </div>
         </motion.section>
@@ -406,8 +460,8 @@ export default function Home() {
           <p>Copyright © Law Consult 2024. All Rights Reserved.</p>
         </div>
         {/* Giant Watermark Logo */}
-        <div className="w-full flex justify-center mt-12 pb-4">
-          <span className="text-[7rem] md:text-[11rem] lg:text-[14rem] font-bold text-slate-100/70 leading-none tracking-tighter whitespace-nowrap select-none">
+        <div className="w-full flex justify-center mt-12 pb-4 overflow-hidden">
+          <span className="text-[3.5rem] sm:text-[6rem] md:text-[11rem] lg:text-[14rem] font-bold text-slate-100/70 leading-none tracking-tighter whitespace-nowrap select-none">
             Law Consult
           </span>
         </div>

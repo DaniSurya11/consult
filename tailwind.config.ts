@@ -52,6 +52,12 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        /* ═══ LawConsult Brand Tokens (Audit §8.4) ═══ */
+        "lc-primary": "#1D64FB",
+        "lc-primary-hover": "#1554D4",
+        "lc-heading": "#0F172A",
+        "lc-body": "#475569",
+        "lc-muted": "#94A3B8",
       },
       borderRadius: {
         lg: "var(--radius)",

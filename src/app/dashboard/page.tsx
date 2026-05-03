@@ -95,7 +95,7 @@ const HighlightText = ({ text, query }: { text: string; query: string }) => {
 
 // Skeleton card component
 const SkeletonCard = () => (
-  <div className="bg-white rounded-[20px] border border-slate-200 p-5 flex flex-col h-full animate-pulse">
+  <div className="bg-white rounded-3xl border border-slate-200 p-5 flex flex-col h-full animate-pulse">
     <div className="flex justify-between items-center mb-4"><div className="h-3 w-14 bg-slate-100 rounded"></div><div className="h-5 w-5 bg-slate-100 rounded"></div></div>
     <div className="flex gap-4 mb-4"><div className="w-16 h-16 rounded-full bg-slate-100 shrink-0"></div><div className="flex-1 space-y-2 pt-1"><div className="h-4 w-3/4 bg-slate-100 rounded"></div><div className="h-3 w-1/2 bg-slate-100 rounded"></div><div className="h-3 w-1/3 bg-slate-100 rounded"></div></div></div>
     <div className="flex gap-1.5 mb-5"><div className="h-5 w-16 bg-slate-100 rounded"></div><div className="h-5 w-20 bg-slate-100 rounded"></div><div className="h-5 w-14 bg-slate-100 rounded"></div></div>
@@ -118,6 +118,7 @@ export default function DashboardPage() {
   const [showToast, setShowToast] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   // Filter states
   const [priceFilter, setPriceFilter] = useState("Semua");
@@ -134,6 +135,13 @@ export default function DashboardPage() {
   useEffect(() => {
     const t = setTimeout(() => setIsLoading(false), 800);
     return () => clearTimeout(t);
+  }, []);
+
+  // Pro-Active Onboarding: Welcome Modal (Audit §7.5)
+  useEffect(() => {
+    if (!localStorage.getItem("lc_onboarded")) {
+      setTimeout(() => setShowWelcome(true), 1200);
+    }
   }, []);
 
   useEffect(() => {
@@ -189,63 +197,6 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-full bg-white px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
       
-      {/* Top Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold text-[#0F172A] mb-0.5 sm:mb-1 tracking-tight">Temukan Lawyer Terbaik</h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium">Pilih lawyer sesuai kebutuhan hukum Anda</p>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          {/* Notification Bell + Popover */}
-          <div ref={notifRef} className="relative">
-            <button 
-              onClick={handleNotificationClick}
-              className="relative w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-[#1D64FB] hover:bg-slate-50 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-              {showNotification && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-              )}
-            </button>
-
-            {/* Notification Popover */}
-            {showNotifPopover && (
-              <div className="absolute right-0 top-11 w-80 bg-white rounded-2xl border border-slate-200 shadow-xl z-50 overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-                  <h3 className="text-sm font-bold text-[#0F172A]">Notifikasi</h3>
-                  <button onClick={markAllRead} className="text-[11px] font-bold text-[#1D64FB] hover:underline">Tandai semua dibaca</button>
-                </div>
-                <div className="max-h-72 overflow-y-auto">
-                  {notifications.map((notif) => (
-                    <div key={notif.id} className={`px-4 py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors cursor-pointer ${!notif.read ? 'bg-blue-50/40' : ''}`}>
-                      <div className="flex items-start gap-3">
-                        <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!notif.read ? 'bg-[#1D64FB]' : 'bg-transparent'}`}></div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-bold text-slate-800 truncate">{notif.title}</p>
-                          <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">{notif.desc}</p>
-                          <p className="text-[10px] text-slate-400 mt-1 font-medium">{notif.time}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/50">
-                  <button className="w-full text-center text-[12px] font-bold text-[#1D64FB] hover:underline">Lihat Semua Notifikasi</button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="hidden sm:flex items-center gap-2 cursor-pointer group">
-            <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200">
-              <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Profile" className="w-full h-full object-cover" />
-            </div>
-            <svg className="w-4 h-4 text-[#0F172A] group-hover:text-[#1D64FB] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-          </div>
-        </div>
-      </div>
-
           {/* Search Bar with Auto-complete */}
           <div ref={searchRef} className="relative mb-4">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -401,7 +352,7 @@ export default function DashboardPage() {
           ) : filteredLawyers.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mb-8">
               {filteredLawyers.map((lawyer) => (
-                <div key={lawyer.id} className="bg-white rounded-[20px] border border-slate-200 p-5 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all duration-300 flex flex-col h-full relative">
+                <div key={lawyer.id} className="bg-white rounded-3xl border border-slate-200 p-5 shadow-[var(--lc-shadow-card)] hover:shadow-[var(--lc-shadow-hover)] hover:scale-[1.01] transition-all duration-300 flex flex-col h-full relative">
                   
                   {/* Card Top: Status & Favorite */}
                   <div className="flex justify-between items-center mb-4">
@@ -512,6 +463,50 @@ export default function DashboardPage() {
             <button onClick={() => setShowToast(false)} className="text-slate-400 hover:text-slate-600">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Welcome Modal (Audit §7.5 - Pro-Active Onboarding) */}
+      {showWelcome && (
+        <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 animate-in zoom-in-95 slide-in-from-bottom-4 duration-500">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#1D64FB] to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-blue-500/20">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM3.89 9L12 4.57 20.11 9 12 13.43 3.89 9zM12 17a3 3 0 100 6 3 3 0 000-6zm0 4a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+              </div>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight mb-1">Selamat Datang di LawConsult! 🎉</h2>
+              <p className="text-sm text-slate-400">Platform konsultasi hukum digital terpercaya</p>
+            </div>
+
+            {/* Feature Highlights */}
+            <div className="space-y-4 mb-8">
+              {[
+                { icon: "🔍", title: "Cari Lawyer Terbaik", desc: "Temukan lawyer terverifikasi sesuai spesialisasi yang Anda butuhkan." },
+                { icon: "💬", title: "Konsultasi via Chat", desc: "Berkomunikasi langsung dengan lawyer secara real-time dan aman." },
+                { icon: "🛡️", title: "Pembayaran Aman", desc: "Sistem pembayaran terlindungi dengan enkripsi end-to-end." }
+              ].map((feature, i) => (
+                <div key={i} className="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 text-lg">
+                    {feature.icon}
+                  </div>
+                  <div>
+                    <h3 className="text-[13px] font-bold text-slate-800">{feature.title}</h3>
+                    <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">{feature.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <button
+              onClick={() => { setShowWelcome(false); localStorage.setItem("lc_onboarded", "true"); }}
+              className="w-full bg-[#1D64FB] hover:bg-blue-700 text-white rounded-xl h-12 text-sm font-bold shadow-sm transition-all active:scale-[0.98]"
+            >
+              Mulai Jelajahi →
+            </button>
+            <p className="text-center text-[10px] text-slate-300 mt-4 font-medium">Anda tidak akan melihat ini lagi</p>
           </div>
         </div>
       )}

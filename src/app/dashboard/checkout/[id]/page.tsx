@@ -71,7 +71,7 @@ export default function CheckoutPage() {
       });
       localStorage.setItem("paid_sessions", JSON.stringify(paidSessions));
       setTimeout(() => {
-        router.push("/dashboard/bookings");
+        router.push("/dashboard/active");
       }, 2000);
     }, 2500);
   };

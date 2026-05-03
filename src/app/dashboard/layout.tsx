@@ -12,15 +12,34 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [globalToast, setGlobalToast] = useState<{show: boolean, message: string, url: string}>({show: false, message: "", url: ""});
   const [notificationCount, setNotificationCount] = useState(0);
   const [clientBookingsBadge, setClientBookingsBadge] = useState(0);
+  const [clientCompletedBadge, setClientCompletedBadge] = useState(0);
   const [lawyerPendingBadge, setLawyerPendingBadge] = useState(0);
   const [lawyerActiveBadge, setLawyerActiveBadge] = useState(0);
   const [lawyerWalletBadge, setLawyerWalletBadge] = useState(0);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationsList, setNotificationsList] = useState<any[]>([]);
+  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
 
   // Hydration-safe: read localStorage only on client
   useEffect(() => {
     setStoredRole(localStorage.getItem("user_role"));
+    
+    // Cleanup corrupted notification states from the previous bug
+    const saved = localStorage.getItem("bookings");
+    if (saved) {
+      try {
+        const bookings = JSON.parse(saved);
+        const fixed = bookings.map((b: any) => {
+          if (b.status === "pending" && b.clientSeenAcceptedNotif) {
+            delete b.clientSeenAcceptedNotif;
+            delete b.clientSeenCompletedNotif;
+          }
+          return b;
+        });
+        localStorage.setItem("bookings", JSON.stringify(fixed));
+      } catch(e) {}
+    }
   }, []);
 
   const isLawyerMode = pathname === "/dashboard/lawyer" || pathname.startsWith("/dashboard/lawyer/") || (storedRole === "lawyer");
@@ -29,7 +48,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     const userRole = localStorage.getItem("user_role") || "client"; 
     // Shared routes that both roles can access
-    const sharedRoutes = ["/dashboard/chat", "/dashboard/checkout", "/dashboard/profile", "/dashboard/settings", "/dashboard/coming-soon", "/dashboard/bookings", "/dashboard/lawyer/verification", "/dashboard/lawyer/wallet"];
+    const sharedRoutes = ["/dashboard/chat", "/dashboard/checkout", "/dashboard/profile", "/dashboard/settings", "/dashboard/coming-soon", "/dashboard/bookings", "/dashboard/active", "/dashboard/lawyer/verification", "/dashboard/lawyer/wallet"];
     const isSharedRoute = sharedRoutes.some(r => pathname.startsWith(r));
 
     if (isSharedRoute) return; // Allow both roles
@@ -42,19 +61,23 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }, [pathname, isLawyerMode, router]);
 
   // Dynamic header content based on route (lawyer has its own integrated header)
-  const headerContent = isLawyerMode
+  const headerContent = isLawyerMode && pathname === "/dashboard/lawyer"
     ? { title: "", subtitle: "" }
     : pathname.includes("/bookings")
       ? { title: "Riwayat Booking", subtitle: "Lihat semua riwayat konsultasi Anda" }
-      : pathname.includes("/chat")
-        ? { title: "Chat Konsultasi", subtitle: "Komunikasi langsung dengan lawyer" }
-        : pathname.includes("/checkout")
-          ? { title: "Pembayaran", subtitle: "Selesaikan transaksi Anda" }
-          : pathname.includes("/review")
-            ? { title: "Ulasan", subtitle: "Berikan penilaian untuk layanan" }
-            : pathname.includes("/verification")
-              ? { title: "Pusat Verifikasi", subtitle: "Unggah dokumen pendukung Anda" }
-              : { title: "", subtitle: "" };
+      : pathname.includes("/lawyers")
+        ? { title: "Cari Lawyer", subtitle: "Temukan pengacara yang tepat" }
+        : pathname.includes("/chat")
+          ? { title: "Chat Konsultasi", subtitle: "Komunikasi langsung dengan lawyer" }
+          : pathname.includes("/checkout")
+            ? { title: "Pembayaran", subtitle: "Selesaikan transaksi Anda" }
+            : pathname.includes("/review")
+              ? { title: "Ulasan", subtitle: "Berikan penilaian untuk layanan" }
+              : pathname.includes("/verification")
+                ? { title: "Pusat Verifikasi", subtitle: "Unggah dokumen pendukung Anda" }
+                : pathname.includes("/active")
+                  ? { title: "Konsultasi Aktif", subtitle: "Pantau status konsultasi Anda" }
+                  : { title: "Temukan Lawyer Terbaik", subtitle: "Pilih lawyer sesuai kebutuhan hukum Anda" };
 
   // Profile info
   const profileInfo = isLawyerMode
@@ -85,34 +108,49 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           const current = JSON.parse(saved);
           
           if (storedRole === "client") {
-            const newlyAccepted = current.find((b: any) => b.status === "accepted" && !b.clientNotified);
+            const newlyAccepted = current.find((b: any) => b.status === "accepted" && !b.clientToastAccepted);
             if (newlyAccepted) {
-              setGlobalToast({ show: true, message: `Lawyer ${newlyAccepted.lawyerName} telah menerima booking Anda!`, url: "/dashboard/bookings" });
-              // Mark as notified
-              const updated = current.map((b: any) => b.id === newlyAccepted.id ? { ...b, clientNotified: true } : b);
+              setGlobalToast({ show: true, message: `Lawyer ${newlyAccepted.lawyerName} telah menerima booking Anda!`, url: "/dashboard/active" });
+              const updated = current.map((b: any) => b.id === newlyAccepted.id ? { ...b, clientToastAccepted: true } : b);
               localStorage.setItem("bookings", JSON.stringify(updated));
               setTimeout(() => setGlobalToast({ show: false, message: "", url: "" }), 8000);
             }
             
-            // Badge logic for client
+            // Badge logic for client (Konsultasi Aktif)
             const activeBookings = current.filter((b: any) => b.status === "pending" || b.status === "accepted" || b.status === "client_ready");
             setClientBookingsBadge(activeBookings.length);
             
-            // Notification logic for client (e.g. accepted ones)
-            const accepted = current.filter((b: any) => b.status === "accepted");
-            setNotificationCount(accepted.length);
-            setNotificationsList(accepted.map((b: any) => ({
+            // Badge logic for client (Riwayat Booking)
+            const unseenCompletedClient = current.filter((b: any) => b.status === "completed" && !b.clientReviewDone && !b.clientSeenCompleted);
+            setClientCompletedBadge(unseenCompletedClient.length);
+            
+            // Notification logic for client bell
+            const unreadClientNotifs = current.filter((b: any) => 
+               (b.status === "pending" && !b.clientSeenPendingNotif) || 
+               (b.status === "accepted" && !b.clientSeenAcceptedNotif) ||
+               (b.status === "completed" && !b.clientSeenCompletedNotif)
+            );
+            
+            setNotificationCount(unreadClientNotifs.length);
+            setNotificationsList(unreadClientNotifs.map((b: any) => ({
               id: b.id,
-              title: "Booking Diterima!",
-              message: `Lawyer ${b.lawyerName} telah menerima booking Anda.`,
-              url: "/dashboard/bookings",
-              time: "Baru saja"
+              title: b.status === "pending" ? "Booking Dibuat!" : b.status === "accepted" ? "Booking Diterima!" : "Sesi Selesai ✅",
+              message: b.status === "pending" ? `Menunggu konfirmasi dari lawyer.` : b.status === "accepted" ? `Lawyer siap berkonsultasi.` : `Silakan berikan ulasan Anda.`,
+              url: b.status === "completed" ? "/dashboard/bookings" : "/dashboard/active",
+              time: "Baru saja",
+              type: b.status === "completed" ? "completed" : "info",
+              bookingId: b.id,
+              status: b.status
             })));
           } else if (storedRole === "lawyer" || isLawyerMode) {
             // Badge logic for lawyer
             const pending = current.filter((b: any) => b.status === "pending");
-            const active = current.filter((b: any) => b.status === "accepted" || b.status === "client_ready");
+            const active = current.filter((b: any) => b.status === "client_ready");
             const unreadWallet = current.filter((b: any) => b.status === "completed" && !b.walletSeen);
+            
+            // Notifications logic for lawyer bell
+            const unseenPending = current.filter((b: any) => b.status === "pending" && !b.lawyerSeenPendingNotif);
+            const unseenCompleted = current.filter((b: any) => b.status === "completed" && !b.lawyerSeenCompletedNotif);
             
             setLawyerPendingBadge(pending.length);
             setLawyerActiveBadge(active.length);
@@ -128,20 +166,29 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               } catch(e) {}
             }
             
-            // Notification logic for lawyer
-            setNotificationCount(pending.length + unreadReviews.length);
+            setNotificationCount(unseenPending.length + unreadReviews.length + unseenCompleted.length);
             
             const notifs = [
-              ...pending.map((b: any) => ({
+              ...unseenPending.map((b: any) => ({
                 id: b.id,
                 title: "Pesanan Baru Masuk",
                 message: `Klien ${b.clientName || 'Ahmad Rizky'} meminta konsultasi.`,
-                url: "/dashboard/lawyer",
+                url: "/dashboard/active",
                 time: "Baru saja",
-                type: "booking"
+                type: "info",
+                bookingId: b.id,
+                status: b.status
               })),
-              ...unreadReviews.map((r: any, idx: number) => ({
-                id: `rev-${idx}`,
+              ...unseenCompleted.map((b: any) => ({
+                id: b.id,
+                title: "Sesi Selesai ✅",
+                message: `Konsultasi dengan ${b.clientName || 'Klien'} telah selesai.`,
+                url: "/dashboard/lawyer/wallet",
+                time: "Baru saja",
+                type: "completed"
+              })),
+              ...unreadReviews.map((r: any) => ({
+                id: `rev-${r.id}`,
                 title: "Ulasan Baru",
                 message: `Klien ${r.name} memberikan bintang ${r.rating}.`,
                 url: "/dashboard/lawyer",
@@ -153,22 +200,32 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           }
         } catch (e) {}
       }
+      // Read wallet balance for hover preview (Audit §3.3)
+      const walletData = localStorage.getItem("lawyer_wallet");
+      if (walletData) {
+        try {
+          const w = JSON.parse(walletData);
+          setWalletBalance(w.balance || 0);
+        } catch(e) {}
+      }
     }, 2000);
     return () => clearInterval(interval);
   }, [storedRole, isLawyerMode]);
 
-  // Different navigation for Client vs Lawyer
   const clientNavItems = [
     { name: "Dashboard", href: "/dashboard", icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" },
     { name: "Cari Lawyer", href: "/dashboard/lawyers", icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" },
-    { name: "Riwayat Booking", href: "/dashboard/bookings", icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", badge: clientBookingsBadge > 0 ? clientBookingsBadge : undefined },
+    { name: "Konsultasi Aktif", href: "/dashboard/active", icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", badge: clientBookingsBadge > 0 ? clientBookingsBadge : undefined, isLive: clientBookingsBadge > 0 },
+    { name: "Pesan & Chat", href: "/dashboard/chat", icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" },
+    { name: "Riwayat Booking", href: "/dashboard/bookings", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4", badge: clientCompletedBadge > 0 ? clientCompletedBadge : undefined },
   ];
 
   const lawyerNavItems = [
-    { name: "Ringkasan", href: "/dashboard/lawyer", icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z", badge: lawyerPendingBadge > 0 ? lawyerPendingBadge : undefined },
-    { name: "Chat Klien", href: "/dashboard/chat", icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z", badge: lawyerActiveBadge > 0 ? lawyerActiveBadge : undefined },
-    { name: "Dompet Saya", href: "/dashboard/lawyer/wallet", icon: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z", badge: lawyerWalletBadge > 0 ? lawyerWalletBadge : undefined },
-    { name: "Pusat Verifikasi", href: "/dashboard/lawyer/verification", icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" },
+    { name: "Ringkasan", href: "/dashboard/lawyer", icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" },
+    { name: "Konsultasi Aktif", href: "/dashboard/active", icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", badge: lawyerPendingBadge > 0 ? lawyerPendingBadge : undefined, badgeType: "action" as const, isLive: lawyerPendingBadge > 0 || lawyerActiveBadge > 0 },
+    { name: lawyerActiveBadge > 0 ? `Chat Klien (${lawyerActiveBadge} Aktif)` : "Pesan & Chat", href: "/dashboard/chat", icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z", badge: lawyerActiveBadge > 0 ? lawyerActiveBadge : undefined, badgeType: "info" as const },
+    { name: "Dompet Saya", href: "/dashboard/lawyer/wallet", icon: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z", badge: lawyerWalletBadge > 0 ? lawyerWalletBadge : undefined, badgeType: "info" as const, hoverPreview: walletBalance !== null ? `Rp${walletBalance.toLocaleString("id-ID")}` : null },
+    { name: "Pusat Verifikasi", href: "/dashboard/lawyer/verification", icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", statusHint: "⏳ Dalam Peninjauan" },
   ];
 
   const bottomNavItems = [
@@ -181,7 +238,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const getIsActive = (item: { name: string; href: string }) => {
     if (isLawyerMode) {
       if (item.name === "Ringkasan") return pathname === "/dashboard/lawyer";
-      if (item.name === "Chat Klien") return pathname.includes("/dashboard/chat");
+      if (item.name === "Konsultasi Aktif") return pathname.includes("/dashboard/active");
+      if (item.name.startsWith("Pesan") || item.name.startsWith("Chat")) return pathname.includes("/dashboard/chat");
       if (item.name === "Dompet Saya") return pathname.includes("/wallet");
       if (item.name === "Pusat Verifikasi") return pathname.includes("/verification");
       return false;
@@ -189,9 +247,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     return pathname === item.href 
       || (item.name === "Dashboard" && pathname === "/dashboard")
       || (item.name === "Cari Lawyer" && pathname.includes("/lawyers"))
-      || (item.name === "Chat Saya" && pathname.includes("/chat"))
-      || (item.name === "Dompet Saya" && pathname.includes("/wallet"))
-      || (item.name === "Pusat Verifikasi" && pathname.includes("/verification"))
+      || (item.name === "Konsultasi Aktif" && pathname.includes("/dashboard/active"))
+      || (item.name === "Pesan & Chat" && pathname.includes("/dashboard/chat"))
       || (item.name === "Riwayat Booking" && pathname.includes("/bookings"));
   };
 
@@ -215,23 +272,48 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           return (
             <Link 
               key={item.name} 
-              href={item.href} 
-              className={`flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-[14px] transition-all ${
+              href={item.href}
+              onMouseEnter={() => setHoveredNav(item.name)}
+              onMouseLeave={() => setHoveredNav(null)}
+              className={`flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-[14px] transition-all duration-200 active:scale-[0.97] relative group ${
                 isActive 
                   ? "bg-blue-50/50 text-[#1D64FB] relative before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1.5 before:bg-[#1D64FB] before:rounded-r-full" 
                   : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
               }`}
             >
               <div className="flex items-center gap-3">
-                <svg className={`w-5 h-5 ${isActive ? "stroke-[#1D64FB]" : "stroke-current"}`} fill="none" viewBox="0 0 24 24">
+                <svg className={`w-5 h-5 transition-transform duration-200 group-hover:scale-110 ${isActive ? "stroke-[#1D64FB]" : "stroke-current"}`} fill="none" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon}></path>
                 </svg>
-                {item.name}
-              </div>
-              {item.badge && (
-                <span className="w-5 h-5 rounded-full bg-[#1D64FB] text-white flex items-center justify-center text-[11px] font-bold shadow-[0_0_10px_rgba(29,100,251,0.5)] animate-pulse">
-                  {item.badge}
+                <span className="flex items-center gap-1.5">
+                  {item.name}
+                  {(item as any).statusHint && (
+                    <span className="text-[9px] font-bold text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded-md">{(item as any).statusHint}</span>
+                  )}
+                  {(item as any).isLive && (
+                    <span className="relative flex h-2 w-2 ml-1">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                  )}
                 </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {item.badge && (
+                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold badge-pulse ${
+                    (item as any).badgeType === 'action' ? 'badge-action' :
+                    (item as any).badgeType === 'social' ? 'badge-social' : 'badge-info'
+                  }`}>
+                    {item.badge}
+                  </span>
+                )}
+              </div>
+              {/* Hover Preview Tooltip (Audit §3.3) */}
+              {(item as any).hoverPreview && hoveredNav === item.name && (
+                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-200">
+                  {(item as any).hoverPreview}
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-y-4 border-y-transparent border-r-4 border-r-slate-900"></div>
+                </div>
               )}
             </Link>
           );
@@ -380,8 +462,46 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               {showNotifications && (
                 <div className="absolute top-12 right-12 w-80 bg-white border border-slate-100 shadow-xl rounded-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-4">
                   <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                    <h3 className="text-[13px] font-bold text-slate-900">Notifikasi</h3>
-                    <span className="text-[11px] font-semibold text-[#1D64FB] bg-blue-50 px-2 py-0.5 rounded-md">{notificationCount} Baru</span>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-[13px] font-bold text-slate-900">Notifikasi</h3>
+                      {notificationCount > 0 && <span className="text-[10px] font-semibold text-[#1D64FB] bg-blue-50 px-1.5 py-0.5 rounded-md">{notificationCount} Baru</span>}
+                    </div>
+                    {notificationCount > 0 && (
+                      <button 
+                        onClick={() => {
+                          const saved = localStorage.getItem("bookings");
+                          if (saved) {
+                            let updated = JSON.parse(saved);
+                            if (storedRole === "client") {
+                              updated = updated.map((b: any) => {
+                                let modified = { ...b };
+                                if (b.status === "pending") modified.clientSeenPendingNotif = true;
+                                if (b.status === "accepted") modified.clientSeenAcceptedNotif = true;
+                                if (b.status === "completed") modified.clientSeenCompletedNotif = true;
+                                return modified;
+                              });
+                            } else {
+                              updated = updated.map((b: any) => {
+                                let modified = { ...b };
+                                if (b.status === "pending") modified.lawyerSeenPendingNotif = true;
+                                if (b.status === "completed") modified.lawyerSeenCompletedNotif = true;
+                                return modified;
+                              });
+                            }
+                            localStorage.setItem("bookings", JSON.stringify(updated));
+                          }
+                          const savedReviews = localStorage.getItem("lawyer_reviews");
+                          if (savedReviews) {
+                            const updated = JSON.parse(savedReviews).map((r: any) => ({ ...r, seenInNotification: true }));
+                            localStorage.setItem("lawyer_reviews", JSON.stringify(updated));
+                          }
+                          setShowNotifications(false);
+                        }}
+                        className="text-[11px] font-bold text-slate-500 hover:text-[#1D64FB] transition-colors cursor-pointer"
+                      >
+                        Tandai Dibaca
+                      </button>
+                    )}
                   </div>
                   <div className="max-h-[300px] overflow-y-auto">
                     {notificationsList.length > 0 ? (
@@ -389,28 +509,49 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                         <div key={idx} onClick={() => { 
                           setShowNotifications(false); 
                           
-                          // Mark review as seen if it's a review notification
                           if (notif.type === "review") {
                             const saved = localStorage.getItem("lawyer_reviews");
                             if (saved) {
                               try {
                                 const reviews = JSON.parse(saved);
-                                const updated = reviews.map((r: any, i: number) => `rev-${i}` === notif.id ? { ...r, seenInNotification: true } : r);
+                                const updated = reviews.map((r: any) => `rev-${r.id}` === notif.id ? { ...r, seenInNotification: true } : r);
                                 localStorage.setItem("lawyer_reviews", JSON.stringify(updated));
+                              } catch(e) {}
+                            }
+                          } else if (notif.bookingId) {
+                            const saved = localStorage.getItem("bookings");
+                            if (saved) {
+                              try {
+                                const updated = JSON.parse(saved).map((b: any) => {
+                                  if (b.id === notif.bookingId) {
+                                    if (storedRole === "client") {
+                                      if (notif.status === "pending") b.clientSeenPendingNotif = true;
+                                      if (notif.status === "accepted") b.clientSeenAcceptedNotif = true;
+                                      if (notif.status === "completed") b.clientSeenCompletedNotif = true;
+                                    } else {
+                                      if (notif.status === "pending") b.lawyerSeenPendingNotif = true;
+                                      if (notif.status === "completed") b.lawyerSeenCompletedNotif = true;
+                                    }
+                                  }
+                                  return b;
+                                });
+                                localStorage.setItem("bookings", JSON.stringify(updated));
                               } catch(e) {}
                             }
                           }
                           
                           router.push(notif.url); 
                         }} className="px-4 py-3 hover:bg-slate-50 border-b border-slate-50 cursor-pointer transition flex gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${notif.type === "review" ? "bg-yellow-50 text-yellow-500" : "bg-blue-50 text-blue-500"}`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${notif.type === "review" ? "bg-yellow-50 text-yellow-500" : notif.type === "completed" ? "bg-green-50 text-green-500" : "bg-blue-50 text-blue-500"}`}>
                             {notif.type === "review" ? (
                               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            ) : notif.type === "completed" ? (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
                             ) : (
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             )}
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <p className="text-[13px] font-bold text-slate-900 mb-0.5 leading-tight">{notif.title}</p>
                             <p className="text-[11px] text-slate-500 leading-snug">{notif.message}</p>
                             <p className="text-[10px] text-slate-400 mt-1 font-medium">{notif.time}</p>

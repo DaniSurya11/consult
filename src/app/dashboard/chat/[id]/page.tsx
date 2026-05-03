@@ -29,21 +29,45 @@ export default function ChatRoom() {
   const [showRating, setShowRating] = useState(false);
   const [rating, setRating] = useState(0);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
+  const [fileError, setFileError] = useState("");
 
   const userRole = typeof window !== "undefined" ? localStorage.getItem("user_role") || "client" : "client";
 
   // Check payment AND acceptance status (Gatekeeper)
   useEffect(() => {
     if (userRole === "client") {
-      const paidSessions = JSON.parse(localStorage.getItem("paid_sessions") || "[]");
-      const hasPaid = paidSessions.some((s: any) => s.lawyerId === lawyerId);
       const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
-      const isAccepted = bookings.some((b: any) => b.lawyerId === lawyerId && b.status === "accepted");
-      if (!hasPaid && !isAccepted) {
+      const sorted = [...bookings].sort((a: any, b: any) => b.id - a.id);
+      const latest = sorted.find((b: any) => b.lawyerId === lawyerId);
+      if (!latest || (latest.status !== "accepted" && latest.status !== "client_ready" && latest.status !== "completed")) {
         router.push(`/dashboard/checkout/${lawyerId}`);
       }
     }
   }, [lawyerId, router, userRole]);
+
+  // Poll for session end by the OTHER party (bidirectional interaction)
+  useEffect(() => {
+    if (sessionEnded) return;
+    const interval = setInterval(() => {
+      const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+      const sorted = [...bookings].sort((a: any, b: any) => b.id - a.id);
+      const myLatestBooking = sorted.find((b: any) => b.lawyerId === lawyerId);
+      
+      if (myLatestBooking && myLatestBooking.status === "completed" && myLatestBooking.endedBy !== userRole) {
+        // The other party ended the session
+        setSessionEnded(true);
+        clearInterval(interval);
+        
+        if (userRole === "client" && !myLatestBooking.clientReviewDone) {
+          // Client should go to review page
+          setTimeout(() => router.push(`/dashboard/review/${lawyerId}`), 1500);
+        } else if (userRole === "lawyer") {
+          setTimeout(() => router.push("/dashboard/lawyer"), 1500);
+        }
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [lawyerId, router, userRole, sessionEnded]);
 
   // Load messages from localStorage
   useEffect(() => {
@@ -116,6 +140,15 @@ export default function ChatRoom() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || sessionEnded) return;
+
+    // File Size Validation (>5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError("Ukuran file melebihi 5MB. Silakan kompres file Anda.");
+      setTimeout(() => setFileError(""), 4000);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     const isImage = file.type.startsWith("image/");
     const newMsg: ChatMessage = {
       id: Date.now(),
@@ -141,6 +174,7 @@ export default function ChatRoom() {
       const bIndex = all.findIndex((b: any) => b.lawyerId === lawyerId && (b.status === "client_ready" || b.status === "accepted"));
       if (bIndex !== -1) {
         all[bIndex].status = "completed";
+        all[bIndex].endedBy = userRole; // Track who ended it
         bookingAmount = all[bIndex].price || bookingAmount;
         clientName = all[bIndex].clientName || clientName;
         localStorage.setItem("bookings", JSON.stringify(all));
@@ -159,10 +193,12 @@ export default function ChatRoom() {
     });
     localStorage.setItem("lawyer_wallet", JSON.stringify(wallet));
 
-    // 3. Redirect Client to Review Page
+    // 3. Redirect based on role
     if (userRole === "client") {
+      // Client goes to review page
       router.push(`/dashboard/review/${lawyerId}`);
     } else {
+      // Lawyer goes back to dashboard — client will detect via polling and go to review
       router.push("/dashboard/lawyer");
     }
   };
@@ -244,7 +280,15 @@ export default function ChatRoom() {
                   </div>
                 )}
                 <p className="text-[13px] leading-relaxed">{msg.text}</p>
-                <p className={`text-[10px] mt-1 ${isMe ? "text-blue-200" : "text-slate-400"} text-right font-medium`}>{msg.time}</p>
+                <p className={`text-[10px] mt-1 ${isMe ? "text-blue-200" : "text-slate-400"} text-right font-medium flex items-center justify-end gap-1`}>
+                  {msg.time}
+                  {isMe && (
+                    <svg className="w-3.5 h-3.5 text-blue-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M1 12l5 5L17 6" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 12l5 5L23 6" />
+                    </svg>
+                  )}
+                </p>
               </div>
             </div>
           );
@@ -267,9 +311,17 @@ export default function ChatRoom() {
 
       {/* Session Ended Banner */}
       {sessionEnded && !showRating && (
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 text-center">
-          <p className="text-sm font-bold text-slate-600">Sesi konsultasi telah berakhir.</p>
-          <p className="text-xs text-slate-400 mt-1">Terima kasih telah menggunakan LawConsult.</p>
+        <div className="px-6 py-5 bg-slate-50 border-t border-slate-100 text-center">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+            <p className="text-sm font-bold text-slate-700">Sesi konsultasi telah berakhir</p>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">Terima kasih telah menggunakan LawConsult. Anda akan dialihkan...</p>
+          <div className="mt-3 flex justify-center">
+            <div className="w-24 h-1 bg-slate-200 rounded-full overflow-hidden">
+              <div className="h-full bg-[#1D64FB] rounded-full animate-pulse" style={{width: '100%'}}></div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -305,6 +357,14 @@ export default function ChatRoom() {
             <h2 className="text-xl font-bold text-[#0F172A] mb-2">Terima Kasih!</h2>
             <p className="text-sm text-slate-500">Mengalihkan ke Riwayat Booking...</p>
           </div>
+        </div>
+      )}
+
+      {/* File Error Toast */}
+      {fileError && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-red-500 text-white px-5 py-2.5 rounded-full text-[12px] font-bold shadow-xl z-50 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          {fileError}
         </div>
       )}
 

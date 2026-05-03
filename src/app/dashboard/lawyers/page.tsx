@@ -198,7 +198,7 @@ export default function LawyerMarketplace() {
               whileHover={{ y: -8 }}
               className="group"
             >
-              <Card className="border-0 shadow-sm bg-white rounded-[2rem] overflow-hidden hover:shadow-2xl hover:shadow-blue-900/5 transition-all duration-300 h-full flex flex-col">
+              <Card className="border-0 shadow-[var(--lc-shadow-card)] bg-white rounded-3xl overflow-hidden hover:shadow-[var(--lc-shadow-hover)] transition-all duration-300 h-full flex flex-col">
                 <CardContent className="p-0 flex-1 flex flex-col">
                   {/* Card Header: Avatar & Top Info */}
                   <div className="p-6 pb-4">
