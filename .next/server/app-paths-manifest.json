@@ -1,8 +1,8 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
   "/page": "app/page.js",
-  "/register/page": "app/register/page.js",
-  "/login/page": "app/login/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/dashboard/lawyers/[id]/page": "app/dashboard/lawyers/[id]/page.js",
-  "/dashboard/bookings/page": "app/dashboard/bookings/page.js"
+  "/dashboard/lawyer/page": "app/dashboard/lawyer/page.js",
+  "/dashboard/review/[id]/page": "app/dashboard/review/[id]/page.js",
+  "/dashboard/bookings/page": "app/dashboard/bookings/page.js",
+  "/dashboard/lawyer/verification/page": "app/dashboard/lawyer/verification/page.js"
 }

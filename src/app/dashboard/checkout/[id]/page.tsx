@@ -45,8 +45,33 @@ export default function CheckoutPage() {
     setTimeout(() => {
       setIsPaying(false);
       setIsSuccess(true);
+      // Save booking as PENDING (Mock DB)
+      const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+      bookings.push({
+        id: Date.now(),
+        lawyerId: lawyer.id,
+        lawyerName: lawyer.name,
+        lawyerImg: lawyer.img,
+        lawyerSpecialty: lawyer.specialty,
+        clientName: localStorage.getItem("user_name") || "Ahmad Rizky",
+        clientEmail: localStorage.getItem("user_email") || "",
+        price: lawyer.price,
+        status: "pending", // pending | accepted | rejected
+        createdAt: new Date().toISOString(),
+      });
+      localStorage.setItem("bookings", JSON.stringify(bookings));
+      // Also save to paid_sessions for backward compat
+      const paidSessions = JSON.parse(localStorage.getItem("paid_sessions") || "[]");
+      paidSessions.push({
+        lawyerId: lawyer.id,
+        lawyerName: lawyer.name,
+        price: lawyer.price,
+        paidAt: new Date().toISOString(),
+        status: "pending"
+      });
+      localStorage.setItem("paid_sessions", JSON.stringify(paidSessions));
       setTimeout(() => {
-        router.push(`/dashboard/chat/${lawyer.id}`);
+        router.push("/dashboard/bookings");
       }, 2000);
     }, 2500);
   };

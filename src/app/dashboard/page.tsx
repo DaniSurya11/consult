@@ -269,7 +269,7 @@ export default function DashboardPage() {
                 {searchSuggestions.map((s) => (
                   <button
                     key={s.id}
-                    onClick={() => { setSearchQuery(s.name); setShowSuggestions(false); router.push(`/dashboard/lawyers/${s.id}`); }}
+                    onClick={() => { setSearchQuery(s.name); setShowSuggestions(false); router.push(`/dashboard/detail-profile/${s.id}`); }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors text-left"
                   >
                     <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-100 shrink-0">
@@ -452,7 +452,7 @@ export default function DashboardPage() {
 
                   {/* Actions */}
                   <div className="flex gap-2.5">
-                    <Button onClick={() => router.push(`/dashboard/lawyers/${lawyer.id}`)} variant="outline" className="flex-1 bg-white border-blue-200 text-[#1D64FB] hover:bg-blue-50 rounded-xl h-10 text-[13px] font-bold shadow-none transition-colors">
+                    <Button onClick={() => router.push(`/dashboard/detail-profile/${lawyer.id}`)} variant="outline" className="flex-1 bg-white border-blue-200 text-[#1D64FB] hover:bg-blue-50 rounded-xl h-10 text-[13px] font-bold shadow-none transition-colors">
                       Lihat Profil
                     </Button>
                     <Button onClick={() => router.push(`/dashboard/checkout/${lawyer.id}`)} className="flex-1 bg-[#1D64FB] hover:bg-blue-700 text-white rounded-xl h-10 text-[13px] font-bold shadow-sm transition-all">

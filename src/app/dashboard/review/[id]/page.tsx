@@ -26,6 +26,30 @@ export default function ReviewPage() {
   const handleSubmit = () => {
     if (rating === 0) return;
     setIsSubmitted(true);
+    
+    // 3. Save Review
+    const savedReviews = localStorage.getItem("lawyer_reviews");
+    const reviews = savedReviews ? JSON.parse(savedReviews) : [];
+    
+    // We try to get the client name from the last booking
+    let clientName = "Ahmad Rizky";
+    const savedBookings = localStorage.getItem("bookings");
+    if (savedBookings) {
+      const all = JSON.parse(savedBookings);
+      const lastBooking = all.find((b: any) => b.lawyerId === lawyer.id);
+      if (lastBooking) clientName = lastBooking.clientName || clientName;
+    }
+
+    reviews.unshift({
+      id: Date.now(),
+      name: clientName,
+      rating: rating,
+      date: new Date().toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' }),
+      text: reviewText || "Pelayanan yang sangat memuaskan.",
+      reply: null
+    });
+    localStorage.setItem("lawyer_reviews", JSON.stringify(reviews));
+
     setTimeout(() => {
       sessionStorage.setItem("chat_completed", "true");
       router.push("/dashboard");

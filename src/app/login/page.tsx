@@ -1,11 +1,83 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Demo accounts — only these can login
+const DEMO_ACCOUNTS: Record<string, { role: "client" | "lawyer"; name: string; redirect: string }> = {
+  "ahmadrrizky@klien.com": { role: "client", name: "Ahmad Rizky", redirect: "/dashboard" },
+  "bima@lawyer.com": { role: "lawyer", name: "Dr. Bima Pratama, S.H.", redirect: "/dashboard/lawyer" },
+};
+
+// Role detection logic
+function detectRole(email: string): "client" | "lawyer" {
+  const lowerEmail = email.toLowerCase();
+  if (lowerEmail.includes("@lawyer") || lowerEmail.includes("@lc.id")) {
+    return "lawyer";
+  }
+  return "client";
+}
+
+// Role-specific content config
+const roleContent = {
+  client: {
+    bg: "#1D64FB",
+    decorBg: "bg-blue-500",
+    title: "Selamat Datang Kembali",
+    subtitle: "Masuk untuk melanjutkan konsultasi hukum Anda dengan lawyer profesional terbaik.",
+    badge: "+1,200 Lawyer Terverifikasi",
+    buttonText: "Masuk ke Dashboard",
+    buttonHref: "/dashboard",
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+      </svg>
+    ),
+  },
+  lawyer: {
+    bg: "#0F172A",
+    decorBg: "bg-blue-900",
+    title: "Halo, Rekan Hukum ⚖️",
+    subtitle: "Masuk ke Ruang Kerja Anda. Kelola konsultasi dan jadwal klien hari ini.",
+    badge: "Lawyer Workspace",
+    buttonText: "Masuk ke Ruang Kerja",
+    buttonHref: "/dashboard/lawyer",
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
+      </svg>
+    ),
+  },
+};
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const router = useRouter();
+  const detectedRole = useMemo(() => detectRole(email), [email]);
+  const content = roleContent[detectedRole];
+  const isLawyer = detectedRole === "lawyer";
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const lowerEmail = email.toLowerCase().trim();
+    const account = DEMO_ACCOUNTS[lowerEmail];
+    if (!account) {
+      setLoginError("Email tidak terdaftar. Gunakan akun demo yang tersedia.");
+      return;
+    }
+    // Save session to localStorage
+    localStorage.setItem("user_role", account.role);
+    localStorage.setItem("user_name", account.name);
+    localStorage.setItem("user_email", lowerEmail);
+    localStorage.setItem("is_logged_in", "true");
+    setLoginError("");
+    router.push(account.redirect);
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 font-sans p-4 md:p-10 flex items-center justify-center">
       <motion.div 
@@ -15,9 +87,14 @@ export default function LoginPage() {
         className="bg-white rounded-[3rem] shadow-sm w-full max-w-[1100px] overflow-hidden grid md:grid-cols-2 min-h-[600px]"
       >
         
-        {/* Left Side: Visual Branding */}
-        <div className="relative hidden md:block bg-[#1D64FB] p-12 overflow-hidden">
+        {/* Left Side: Visual Branding — MORPHING PANEL */}
+        <motion.div 
+          className="relative hidden md:block p-12 overflow-hidden"
+          animate={{ backgroundColor: content.bg }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+        >
           <div className="relative z-10 h-full flex flex-col justify-between">
+            {/* Logo */}
             <motion.div 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -32,37 +109,94 @@ export default function LoginPage() {
               <span className="text-lg font-bold tracking-tight">Law Consult</span>
             </motion.div>
             
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.7 }}
-            >
-              <h1 className="text-4xl font-bold text-white mb-4 leading-tight">Selamat Datang Kembali</h1>
-              <p className="text-blue-100 text-[15px] font-medium leading-relaxed max-w-sm">
-                Masuk untuk melanjutkan konsultasi hukum Anda dengan lawyer profesional terbaik.
-              </p>
-            </motion.div>
-
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="flex items-center gap-3"
-            >
-              <div className="flex -space-x-3">
-                {[1,2,3].map((i) => (
-                  <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 overflow-hidden">
-                    <img src={`https://i.pravatar.cc/100?u=${i}`} alt="user" />
+            {/* Dynamic Title & Subtitle */}
+            <div className="min-h-[140px]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={detectedRole}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <motion.div 
+                      className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white"
+                      animate={{ rotate: isLawyer ? [0, -10, 10, 0] : 0 }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      {content.icon}
+                    </motion.div>
+                    {isLawyer && (
+                      <motion.span 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="text-[11px] font-bold uppercase tracking-widest text-blue-300 bg-white/10 px-3 py-1 rounded-full"
+                      >
+                        Mode Terdeteksi
+                      </motion.span>
+                    )}
                   </div>
-                ))}
-              </div>
-              <p className="text-white/80 text-[13px] font-medium">+1,200 Lawyer Terverifikasi</p>
-            </motion.div>
+                  <h1 className="text-4xl font-bold text-white mb-4 leading-tight">{content.title}</h1>
+                  <p className={`text-[15px] font-medium leading-relaxed max-w-sm ${isLawyer ? 'text-slate-400' : 'text-blue-100'}`}>
+                    {content.subtitle}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Bottom Badge */}
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={detectedRole + "-badge"}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="flex items-center gap-3"
+              >
+                {isLawyer ? (
+                  <>
+                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse"></div>
+                    </div>
+                    <p className="text-white/80 text-[13px] font-medium">{content.badge}</p>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex -space-x-3">
+                      {[1,2,3].map((i) => (
+                        <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 overflow-hidden">
+                          <img src={`https://i.pravatar.cc/100?u=${i}`} alt="user" />
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-white/80 text-[13px] font-medium">{content.badge}</p>
+                  </>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
           
-          {/* Decorative Circle */}
-          <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-500 rounded-full opacity-50 blur-3xl"></div>
-        </div>
+          {/* Decorative Circle — Color also morphs */}
+          <motion.div 
+            className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full opacity-50 blur-3xl"
+            animate={{ backgroundColor: isLawyer ? "#1e3a5f" : "#3b82f6" }}
+            transition={{ duration: 0.8 }}
+          ></motion.div>
+
+          {/* Secondary decorative (Lawyer mode only) */}
+          <AnimatePresence>
+            {isLawyer && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 0.3, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                className="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full -mr-32 -mt-32 blur-3xl"
+              ></motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         {/* Right Side: Login Form */}
         <motion.div 
@@ -76,7 +210,8 @@ export default function LoginPage() {
             <p className="text-slate-500 text-[14px] font-medium">Belum punya akun? <Link href="/register" className="text-[#1D64FB] font-bold hover:underline">Daftar Sekarang</Link></p>
           </div>
 
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleLogin}>
+            {/* Email Field — The Magic Trigger */}
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -84,13 +219,61 @@ export default function LoginPage() {
               className="space-y-2"
             >
               <label className="text-[13px] font-bold text-slate-700 uppercase tracking-wider">Email Address</label>
-              <input 
-                type="email" 
-                placeholder="nama@email.com"
-                className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1D64FB]/20 focus:border-[#1D64FB] transition"
-              />
+              <div className="relative">
+                <input 
+                  type="email" 
+                  placeholder="nama@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1D64FB]/20 focus:border-[#1D64FB] transition pr-12"
+                />
+                {/* Role indicator badge inside input */}
+                <AnimatePresence>
+                  {isLawyer && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.5 }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
+                        </svg>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              {/* Demo hint text */}
+              <AnimatePresence>
+                {email.length > 0 && (
+                  <motion.p 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="text-[11px] text-slate-400 font-medium mt-1"
+                  >
+                    💡 Akun demo: <span className="text-[#1D64FB] font-bold">ahmadrrizky@klien.com</span> (Klien) atau <span className="text-[#1D64FB] font-bold">bima@lawyer.com</span> (Lawyer)
+                  </motion.p>
+                )}
+              </AnimatePresence>
+              {/* Login Error */}
+              <AnimatePresence>
+                {loginError && (
+                  <motion.p 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="text-[11px] text-red-500 font-bold mt-1"
+                  >
+                    ⚠️ {loginError}
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </motion.div>
             
+            {/* Password Field */}
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -108,6 +291,7 @@ export default function LoginPage() {
               />
             </motion.div>
 
+            {/* Remember Me */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -118,19 +302,21 @@ export default function LoginPage() {
               <label htmlFor="remember" className="text-[13px] text-slate-600 font-medium cursor-pointer">Ingat saya di perangkat ini</label>
             </motion.div>
 
+            {/* Submit Button — Dynamic Text & Href */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
             >
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button asChild className="w-full bg-[#1D64FB] hover:bg-blue-700 text-white rounded-2xl py-7 text-[15px] font-bold shadow-lg shadow-blue-500/20 transition-all mt-4">
-                  <Link href="/dashboard">Masuk ke Dashboard</Link>
+                <Button type="submit" className={`w-full text-white rounded-2xl py-7 text-[15px] font-bold shadow-lg transition-all mt-4 ${isLawyer ? 'bg-slate-900 hover:bg-slate-800 shadow-slate-900/20' : 'bg-[#1D64FB] hover:bg-blue-700 shadow-blue-500/20'}`}>
+                  {content.buttonText}
                 </Button>
               </motion.div>
             </motion.div>
           </form>
 
+          {/* Divider & Google */}
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

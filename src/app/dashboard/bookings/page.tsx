@@ -1,140 +1,240 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { lawyers } from "@/lib/lawyers-data";
 
-const bookingHistory = [
-  {
-    id: 1,
-    lawyerId: 1,
-    date: "2 Mei 2026",
-    time: "14:30 - 15:30",
-    status: "Selesai",
-    type: "Chat Online",
-    rating: 5,
-  },
-  {
-    id: 2,
-    lawyerId: 3,
-    date: "28 April 2026",
-    time: "10:00 - 11:00",
-    status: "Selesai",
-    type: "Chat Online",
-    rating: 4,
-  },
-  {
-    id: 3,
-    lawyerId: 2,
-    date: "25 April 2026",
-    time: "16:00 - 17:00",
-    status: "Selesai",
-    type: "Chat Online",
-    rating: 5,
-  },
-];
+interface Booking {
+  id: number;
+  lawyerId: number;
+  lawyerName: string;
+  lawyerImg: string;
+  lawyerSpecialty: string;
+  clientName: string;
+  price: string;
+  status: "pending" | "accepted" | "client_ready" | "rejected" | "completed";
+  createdAt: string;
+}
 
 export default function BookingsPage() {
   const router = useRouter();
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [toast, setToast] = useState<{ show: boolean; message: string; type: "success" | "info" }>({ show: false, message: "", type: "info" });
 
-  return (
-    <div className="bg-white min-h-full px-4 sm:px-8 py-6 sm:py-8">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold text-[#0F172A] mb-0.5 sm:mb-1 tracking-tight">Riwayat Booking</h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium">Daftar konsultasi yang pernah Anda lakukan</p>
+  // Load and poll bookings from localStorage
+  useEffect(() => {
+    const loadBookings = () => {
+      const saved = localStorage.getItem("bookings");
+      if (saved) {
+        setBookings(JSON.parse(saved));
+      }
+    };
+    loadBookings();
+    setIsLoading(false);
+
+    // Polling every 2 seconds for status changes
+    const interval = setInterval(() => {
+      const saved = localStorage.getItem("bookings");
+      if (saved) {
+        const current = JSON.parse(saved) as Booking[];
+        setBookings(prev => {
+          // Check if any booking status changed to "accepted"
+          for (const booking of current) {
+            const old = prev.find(b => b.id === booking.id);
+            if (old && old.status === "pending" && booking.status === "accepted") {
+              setToast({ show: true, message: `Booking Diterima oleh ${booking.lawyerName}! 🎉`, type: "success" });
+              setTimeout(() => setToast({ show: false, message: "", type: "info" }), 5000);
+            }
+          }
+          return current;
+        });
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case "pending": return { label: "Menunggu Konfirmasi", color: "bg-yellow-50 text-yellow-600 border-yellow-200", dot: "bg-yellow-500", icon: "⏳" };
+      case "accepted": return { label: "Diterima", color: "bg-green-50 text-green-600 border-green-200", dot: "bg-green-500", icon: "✅" };
+      case "client_ready": return { label: "Menunggu Lawyer", color: "bg-blue-50 text-blue-600 border-blue-200", dot: "bg-blue-500", icon: "💬" };
+      case "rejected": return { label: "Ditolak", color: "bg-red-50 text-red-500 border-red-200", dot: "bg-red-500", icon: "❌" };
+      case "completed": return { label: "Selesai", color: "bg-slate-50 text-slate-500 border-slate-200", dot: "bg-slate-400", icon: "📋" };
+      default: return { label: status, color: "bg-slate-50 text-slate-500 border-slate-200", dot: "bg-slate-400", icon: "📋" };
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-6 lg:p-8 space-y-4 max-w-4xl mx-auto">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-48 bg-slate-100 rounded-xl"></div>
+          {[1,2,3].map(i => <div key={i} className="h-32 bg-slate-100 rounded-2xl"></div>)}
         </div>
       </div>
+    );
+  }
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-[#F8FAFC] rounded-2xl border border-slate-200 p-5 text-center">
-          <p className="text-2xl font-black text-[#0F172A]">3</p>
-          <p className="text-xs text-slate-500 font-medium mt-1">Total Konsultasi</p>
-        </div>
-        <div className="bg-[#F8FAFC] rounded-2xl border border-slate-200 p-5 text-center">
-          <p className="text-2xl font-black text-[#1D64FB]">3</p>
-          <p className="text-xs text-slate-500 font-medium mt-1">Selesai</p>
-        </div>
-        <div className="bg-[#F8FAFC] rounded-2xl border border-slate-200 p-5 text-center">
-          <p className="text-2xl font-black text-yellow-500">4.7</p>
-          <p className="text-xs text-slate-500 font-medium mt-1">Rata-rata Rating</p>
-        </div>
+  return (
+    <div className="p-6 lg:p-8 space-y-6 max-w-4xl mx-auto">
+      {/* Header */}
+      <div>
+        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Riwayat Booking</h1>
+        <p className="text-sm text-slate-500 font-medium">Pantau status konsultasi Anda</p>
       </div>
 
       {/* Booking List */}
-      <div className="space-y-3">
-        {bookingHistory.map((booking) => {
-          const lawyer = lawyers.find((l) => l.id === booking.lawyerId);
-          if (!lawyer) return null;
-
-          return (
-            <div key={booking.id} className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow duration-300">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  {/* Avatar */}
-                  <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-100 shrink-0">
-                    <img src={lawyer.img} alt={lawyer.name} className="w-full h-full object-cover" />
+      {bookings.length === 0 ? (
+        <div className="py-20 text-center">
+          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
+          <h2 className="text-lg font-bold text-slate-700 mb-1">Belum ada booking</h2>
+          <p className="text-sm text-slate-500 mb-6">Mulai dengan mencari lawyer dan melakukan booking konsultasi.</p>
+          <Button onClick={() => router.push("/dashboard")} className="bg-[#1D64FB] hover:bg-blue-700 text-white rounded-xl h-10 px-6 text-sm font-bold">
+            Cari Lawyer
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {[...bookings].reverse().map((booking) => {
+            const statusConfig = getStatusConfig(booking.status);
+            return (
+              <div key={booking.id} className={`bg-white rounded-2xl border p-5 transition-all ${booking.status === "pending" ? "border-yellow-200 shadow-sm shadow-yellow-100" : (booking.status === "accepted" || booking.status === "client_ready") ? "border-green-200 shadow-sm shadow-green-100" : "border-slate-200 shadow-sm"}`}>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  {/* Lawyer Info */}
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-slate-100 shrink-0">
+                      <img src={booking.lawyerImg} alt={booking.lawyerName} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <h3 className="text-[15px] font-bold text-slate-900 truncate">{booking.lawyerName}</h3>
+                        <svg className="w-4 h-4 text-[#1D64FB] shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6.267 3.441A3 3 0 018.5 2h3a3 3 0 012.233 1.441l.73 1.22A3 3 0 0016.925 6h1.075a3 3 0 013 3v3a3 3 0 01-3 3h-1.075a3 3 0 00-2.462 1.339l-.73 1.22A3 3 0 0111.5 18h-3a3 3 0 01-2.233-1.441l-.73-1.22A3 3 0 003.075 14H2a3 3 0 01-3-3V9a3 3 0 013-3h1.075a3 3 0 002.462-1.339l.73-1.22zM8.7 10.7l-1.4-1.4a1 1 0 00-1.4 1.4l2.1 2.1c.4.4 1 .4 1.4 0l4.2-4.2a1 1 0 10-1.4-1.4L8.7 10.7z" clipRule="evenodd"></path></svg>
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium">{booking.lawyerSpecialty}</p>
+                      <p className="text-xs text-slate-400 mt-1">{new Date(booking.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+                    </div>
                   </div>
 
-                  {/* Info */}
-                  <div>
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <h3 className="text-sm font-bold text-[#0F172A]">{lawyer.name}</h3>
-                      <svg className="w-4 h-4 text-[#1D64FB] shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6.267 3.441A3 3 0 018.5 2h3a3 3 0 012.233 1.441l.73 1.22A3 3 0 0016.925 6h1.075a3 3 0 013 3v3a3 3 0 01-3 3h-1.075a3 3 0 00-2.462 1.339l-.73 1.22A3 3 0 0111.5 18h-3a3 3 0 01-2.233-1.441l-.73-1.22A3 3 0 003.075 14H2a3 3 0 01-3-3V9a3 3 0 013-3h1.075a3 3 0 002.462-1.339l.73-1.22zM8.7 10.7l-1.4-1.4a1 1 0 00-1.4 1.4l2.1 2.1c.4.4 1 .4 1.4 0l4.2-4.2a1 1 0 10-1.4-1.4L8.7 10.7z" clipRule="evenodd"></path></svg>
+                  {/* Status & Actions */}
+                  <div className="flex flex-col items-end gap-3 shrink-0">
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${statusConfig.color}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot} ${booking.status === "pending" ? "animate-pulse" : ""}`}></span>
+                      {statusConfig.label}
                     </div>
-                    <p className="text-xs text-slate-500 font-medium">{lawyer.specialty}</p>
+                    <p className="text-sm font-black text-slate-900">{booking.price}</p>
                   </div>
                 </div>
 
-                {/* Right Side */}
-                <div className="flex items-center gap-6">
-                  {/* Date & Time */}
-                  <div className="text-right hidden sm:block">
-                    <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-0.5">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                      {booking.date}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                      {booking.time}
+                {/* Pending State: Waiting message */}
+                {booking.status === "pending" && (
+                  <div className="mt-4 pt-4 border-t border-yellow-100">
+                    <div className="flex items-center gap-3 p-3 bg-yellow-50/50 rounded-xl">
+                      <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
+                        <span className="text-sm">⏳</span>
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-yellow-700">Menunggu Konfirmasi Lawyer...</p>
+                        <p className="text-[11px] text-yellow-600/80 mt-0.5">Lawyer Anda sedang meninjau permintaan. Mohon tunggu notifikasi.</p>
+                      </div>
                     </div>
                   </div>
+                )}
 
-                  {/* Rating */}
-                  <div className="flex items-center gap-0.5">
-                    {[...Array(5)].map((_, s) => (
-                      <svg key={s} className={`w-3.5 h-3.5 ${s < booking.rating ? "text-yellow-400 fill-yellow-400" : "text-slate-200 fill-slate-200"}`} viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                    ))}
+                {/* Accepted State: Enter Chat button */}
+                {booking.status === "accepted" && (
+                  <div className="mt-4 pt-4 border-t border-green-100">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                          <span className="text-sm">✅</span>
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-green-700">Booking Anda telah diterima!</p>
+                          <p className="text-[11px] text-green-600/80 mt-0.5">Silakan masuk ke ruang chat untuk memulai konsultasi.</p>
+                        </div>
+                      </div>
+                      <Button 
+                        onClick={() => {
+                          const saved = localStorage.getItem("bookings");
+                          if (saved) {
+                            const all = JSON.parse(saved);
+                            const updated = all.map((b: any) => b.id === booking.id ? { ...b, status: "client_ready" } : b);
+                            localStorage.setItem("bookings", JSON.stringify(updated));
+                          }
+                          router.push(`/dashboard/chat/${booking.lawyerId}`);
+                        }}
+                        className="bg-[#1D64FB] hover:bg-blue-700 text-white rounded-xl h-10 px-6 text-[13px] font-bold shadow-sm animate-pulse w-full sm:w-auto"
+                      >
+                        Masuk Ruang Chat →
+                      </Button>
+                    </div>
                   </div>
+                )}
+                {/* Client Ready State */}
+                {booking.status === "client_ready" && (
+                  <div className="mt-4 pt-4 border-t border-blue-100">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                          <span className="text-sm">💬</span>
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-blue-700">Menunggu lawyer memasuki ruang chat.</p>
+                          <p className="text-[11px] text-blue-600/80 mt-0.5">Anda dapat masuk kembali ke ruang chat kapan saja.</p>
+                        </div>
+                      </div>
+                      <Button 
+                        onClick={() => router.push(`/dashboard/chat/${booking.lawyerId}`)}
+                        variant="outline"
+                        className="border-blue-200 text-[#1D64FB] hover:bg-blue-50 rounded-xl h-10 px-6 text-[13px] font-bold shadow-sm w-full sm:w-auto"
+                      >
+                        Masuk Ulang →
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
-                  {/* Status Badge */}
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-green-50 text-green-600">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                    {booking.status}
-                  </span>
-
-                  {/* Action */}
-                  <Button 
-                    onClick={() => router.push(`/dashboard/lawyers/${lawyer.id}`)}
-                    variant="outline" 
-                    className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-[#1D64FB] rounded-xl h-9 px-4 text-xs font-bold shadow-none transition-colors"
-                  >
-                    Lihat Detail
-                  </Button>
-                </div>
+                {/* Rejected State */}
+                {booking.status === "rejected" && (
+                  <div className="mt-4 pt-4 border-t border-red-100">
+                    <div className="flex items-center gap-3 p-3 bg-red-50/50 rounded-xl">
+                      <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                        <span className="text-sm">❌</span>
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-red-600">Booking ditolak oleh Lawyer.</p>
+                        <p className="text-[11px] text-red-500/80 mt-0.5">Dana Anda akan dikembalikan secara otomatis (Simulasi Refund).</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
+            );
+          })}
+        </div>
+      )}
 
-              {/* Mobile Date (shown on small screens) */}
-              <div className="flex items-center gap-4 mt-3 sm:hidden">
-                <span className="text-xs text-slate-500 font-medium">{booking.date}</span>
-                <span className="text-xs text-slate-500 font-medium">{booking.time}</span>
-              </div>
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
+          <div className="bg-white border border-green-200 rounded-xl shadow-lg p-4 flex items-start gap-3 w-80">
+            <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-0.5">
+              <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
             </div>
-          );
-        })}
-      </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-bold text-slate-900">Kabar Baik!</h4>
+              <p className="text-[12px] text-slate-500 mt-0.5">{toast.message}</p>
+            </div>
+            <button onClick={() => setToast({ ...toast, show: false })} className="text-slate-400 hover:text-slate-600">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
