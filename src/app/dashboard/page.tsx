@@ -159,7 +159,7 @@ export default function ClientDashboard() {
             >
               <motion.div 
                 initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
-                className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden relative"
+                className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md max-h-[90dvh] overflow-y-auto relative hide-scrollbar"
               >
                 <div className="p-6 sm:p-10">
                   <div className="flex justify-between items-center mb-6">

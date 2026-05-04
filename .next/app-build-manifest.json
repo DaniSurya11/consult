@@ -11,11 +11,6 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/login/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/login/page.js"
-    ],
     "/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -31,15 +26,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/template.js"
     ],
-    "/dashboard/lawyers/page": [
+    "/dashboard/bookings/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/lawyers/page.js"
+      "static/chunks/app/dashboard/bookings/page.js"
     ],
-    "/dashboard/detail-profile/[id]/page": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/detail-profile/[id]/page.js"
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }
