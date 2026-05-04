@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getLawyerById } from "@/lib/lawyers-data";
@@ -19,11 +20,28 @@ export default function LawyerProfilePage() {
     );
   }
 
-  const dummyReviews = [
-    { name: "Andi Wirawan", date: "2 minggu lalu", rating: 5, text: "Sangat profesional dan responsif. Masalah hukum saya diselesaikan dengan cepat dan tepat." },
-    { name: "Maya Sari", date: "1 bulan lalu", rating: 5, text: "Penjelasannya sangat mudah dipahami. Rekomendasi langkah hukum yang diberikan sangat membantu." },
-    { name: "Budi Santoso", date: "2 bulan lalu", rating: 4, text: "Konsultasi berjalan lancar dan informatif. Lawyer sangat menguasai bidangnya." },
-  ];
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [consultationCount, setConsultationCount] = useState(200);
+
+  useEffect(() => {
+    const defaultReviews = [
+      { name: "Andi Wirawan", date: "2 minggu lalu", rating: 5, text: "Sangat profesional dan responsif. Masalah hukum saya diselesaikan dengan cepat dan tepat." },
+      { name: "Maya Sari", date: "1 bulan lalu", rating: 5, text: "Penjelasannya sangat mudah dipahami. Rekomendasi langkah hukum yang diberikan sangat membantu." },
+      { name: "Budi Santoso", date: "2 bulan lalu", rating: 4, text: "Konsultasi berjalan lancar dan informatif. Lawyer sangat menguasai bidangnya." },
+    ];
+
+    if (lawyer) {
+      const savedReviews = localStorage.getItem(`reviews_${lawyer.id}`);
+      let userReviews = [];
+      if (savedReviews) {
+        try {
+          userReviews = JSON.parse(savedReviews);
+        } catch (e) {}
+      }
+      setReviews([...userReviews, ...defaultReviews]);
+      setConsultationCount(200 + userReviews.length);
+    }
+  }, [lawyer]);
 
   return (
     <div className="bg-white min-h-full">
@@ -64,10 +82,10 @@ export default function LawyerProfilePage() {
                 <div className="flex items-center gap-1">
                   <svg className="w-4 h-4 text-yellow-400 fill-yellow-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
                   <span className="text-sm font-bold text-yellow-500">{lawyer.rating}</span>
-                  <span className="text-xs text-slate-500">({lawyer.reviews} ulasan)</span>
+                  <span className="text-xs text-slate-500">({lawyer.reviews + Math.max(0, reviews.length - 3)} ulasan)</span>
                 </div>
                 <div className="h-4 w-px bg-slate-200"></div>
-                <span className="text-xs text-slate-500 font-medium">200+ konsultasi selesai</span>
+                <span className="text-xs text-slate-500 font-medium">{consultationCount}+ konsultasi selesai</span>
               </div>
 
               <div className="flex flex-wrap gap-1.5">
@@ -132,8 +150,8 @@ export default function LawyerProfilePage() {
             <div className="bg-white rounded-2xl border border-slate-200 p-6">
               <h2 className="text-sm font-bold text-[#0F172A] mb-4 tracking-tight">Ulasan Klien</h2>
               <div className="space-y-4">
-                {dummyReviews.map((review, i) => (
-                  <div key={i} className={`${i < dummyReviews.length - 1 ? "pb-4 border-b border-slate-100" : ""}`}>
+                {reviews.map((review, i) => (
+                  <div key={i} className={`${i < reviews.length - 1 ? "pb-4 border-b border-slate-100" : ""}`}>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">{review.name.charAt(0)}</div>
@@ -193,7 +211,7 @@ export default function LawyerProfilePage() {
               <h3 className="text-sm font-bold text-[#0F172A] mb-4 tracking-tight">Statistik</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-[#F8FAFC] rounded-xl">
-                  <p className="text-lg font-black text-[#0F172A]">200+</p>
+                  <p className="text-lg font-black text-[#0F172A]">{consultationCount}+</p>
                   <p className="text-[11px] text-slate-500 font-medium">Konsultasi</p>
                 </div>
                 <div className="text-center p-3 bg-[#F8FAFC] rounded-xl">

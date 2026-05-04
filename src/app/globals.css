@@ -91,6 +91,26 @@
   }
 }
 
+/* ═══ Mobile Scroll & Touch Fixes ═══ */
+@media (max-width: 1023px) {
+  html, body {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+  }
+
+  /* Prevent framer-motion animations from causing layout shifts on mobile */
+  .motion-reduce * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* Fix mobile scroll containers */
+  main, [role="main"] {
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+}
+
 /* ═══ Design System Utilities (Audit §1, §3, §8) ═══ */
 
 /* Glassmorphism Surface (Audit §1) */
@@ -142,6 +162,14 @@
 .smooth-scroll {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile-optimized scroll container */
+@media (max-width: 1023px) {
+  .smooth-scroll {
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+  }
 }
 
 /* QRIS Scan Animation */

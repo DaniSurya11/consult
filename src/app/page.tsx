@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
@@ -22,9 +22,24 @@ const staggerContainer = {
 
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState("");
+
+  useEffect(() => {
+    setIsLoggedIn(localStorage.getItem("is_logged_in") === "true");
+    setUserRole(localStorage.getItem("user_role") || "");
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("is_logged_in");
+    localStorage.removeItem("user_role");
+    localStorage.removeItem("user_name");
+    setIsLoggedIn(false);
+    setUserRole("");
+  };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 overflow-x-hidden font-sans p-4 md:p-6 flex flex-col gap-4 md:gap-6 items-center relative">
+    <div className="min-h-screen bg-slate-100 text-slate-900 overflow-x-hidden font-sans p-3 sm:p-4 md:p-6 flex flex-col gap-3 sm:gap-4 md:gap-6 items-center relative">
       {/* Navbar Card */}
       <motion.div 
         initial={{ y: -20, opacity: 0 }}
@@ -53,12 +68,25 @@ export default function Home() {
 
           {/* Desktop Auth */}
           <div className="hidden lg:flex items-center gap-4 shrink-0">
-            <Link href="/login" className="text-[14px] font-semibold text-slate-600 hover:text-slate-900 transition">
-              Login
-            </Link>
-            <Link href="/register" className="px-5 py-2.5 bg-[#1D64FB] text-white rounded-full text-[14px] font-semibold hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
-              Mulai Konsultasi
-            </Link>
+            {!isLoggedIn ? (
+              <>
+                <Link href="/login" className="text-[14px] font-semibold text-slate-600 hover:text-slate-900 transition">
+                  Login
+                </Link>
+                <Link href="/register" className="px-5 py-2.5 bg-[#1D64FB] text-white rounded-full text-[14px] font-semibold hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
+                  Mulai Konsultasi
+                </Link>
+              </>
+            ) : (
+              <>
+                <button onClick={handleLogout} className="text-[14px] font-semibold text-slate-600 hover:text-slate-900 transition">
+                  Keluar
+                </button>
+                <Link href={userRole === "lawyer" ? "/dashboard/lawyer" : "/dashboard"} className="px-5 py-2.5 bg-[#1D64FB] text-white rounded-full text-[14px] font-semibold hover:bg-blue-700 transition shadow-sm whitespace-nowrap">
+                  Dashboard
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -93,12 +121,25 @@ export default function Home() {
               <Link href="#reviews" onClick={() => setIsMobileMenuOpen(false)}>Ulasan</Link>
             </nav>
             <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
-              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-center py-3 text-[15px] font-semibold text-slate-600 border border-slate-200 rounded-full hover:bg-slate-50 transition">
-                Login
-              </Link>
-              <Link href="/register" onClick={() => setIsMobileMenuOpen(false)} className="text-center py-3 bg-[#1D64FB] text-white rounded-full text-[15px] font-semibold shadow-sm hover:bg-blue-700 transition">
-                Mulai Konsultasi
-              </Link>
+              {!isLoggedIn ? (
+                <>
+                  <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-center py-3 text-[15px] font-semibold text-slate-600 border border-slate-200 rounded-full hover:bg-slate-50 transition">
+                    Login
+                  </Link>
+                  <Link href="/register" onClick={() => setIsMobileMenuOpen(false)} className="text-center py-3 bg-[#1D64FB] text-white rounded-full text-[15px] font-semibold shadow-sm hover:bg-blue-700 transition">
+                    Mulai Konsultasi
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="text-center py-3 text-[15px] font-semibold text-slate-600 border border-slate-200 rounded-full hover:bg-slate-50 transition">
+                    Keluar
+                  </button>
+                  <Link href={userRole === "lawyer" ? "/dashboard/lawyer" : "/dashboard"} onClick={() => setIsMobileMenuOpen(false)} className="text-center py-3 bg-[#1D64FB] text-white rounded-full text-[15px] font-semibold shadow-sm hover:bg-blue-700 transition">
+                    Dashboard
+                  </Link>
+                </>
+              )}
             </div>
           </motion.div>
         )}
@@ -112,17 +153,17 @@ export default function Home() {
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
-          className="bg-white rounded-[3rem] shadow-sm w-full p-6 md:p-10"
+          className="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-sm w-full p-4 sm:p-6 md:p-10"
         >
           <motion.h1 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-center leading-tight mb-8 md:mb-10 text-slate-900 mt-0"
+            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-center leading-tight mb-6 sm:mb-8 md:mb-10 text-slate-900 mt-0"
           >
             Lawyer Profesional Online
           </motion.h1>
-          <div className="relative w-full h-[60vh] md:h-[calc(100vh-20rem)] min-h-[450px] max-h-[750px] rounded-[2rem] overflow-hidden shadow-lg">
+          <div className="relative w-full h-[45vh] sm:h-[55vh] md:h-[calc(100vh-20rem)] min-h-[300px] sm:min-h-[400px] max-h-[750px] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-lg">
             <Image
               alt="Lawyer Profesional"
               className="object-cover object-center w-full h-full"
@@ -161,10 +202,10 @@ export default function Home() {
         <motion.section 
           id="services"
           {...fadeInUp}
-          className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16"
+          className="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-sm w-full p-5 sm:p-8 md:p-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-10 text-slate-900">Kategori Konsultasi</h2>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
             {[
               { title: "Hukum Perdata", icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4", desc: "Masalah kontrak, sengketa, dan hak individu." },
               { title: "Hukum Pidana", icon: "M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3", desc: "Pendampingan kasus hukum pidana dan perlindungan hukum." },
@@ -202,7 +243,7 @@ export default function Home() {
         <motion.section 
           id="how-it-works" 
           {...fadeInUp}
-          className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16"
+          className="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-sm w-full p-5 sm:p-8 md:p-16"
         >
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">Cara Kerja Law Consult</h2>
@@ -241,7 +282,7 @@ export default function Home() {
         <motion.section 
           id="about" 
           {...fadeInUp}
-          className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16 grid md:grid-cols-2 gap-12 lg:gap-16 items-center"
+          className="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-sm w-full p-5 sm:p-8 md:p-16 grid md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center"
         >
           <div className="relative h-[300px] md:h-[400px] rounded-[2rem] overflow-hidden shadow-md">
             <Image
@@ -274,7 +315,7 @@ export default function Home() {
         <motion.section 
           id="team" 
           {...fadeInUp}
-          className="bg-white rounded-[3rem] shadow-sm w-full p-6 md:p-10 lg:p-12"
+          className="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-sm w-full p-4 sm:p-6 md:p-10 lg:p-12"
         >
           <div className="flex justify-end mb-4">
             <div className="flex gap-2">
@@ -320,7 +361,7 @@ export default function Home() {
         <motion.section 
           id="reviews" 
           {...fadeInUp}
-          className="bg-white rounded-[3rem] shadow-sm w-full p-8 md:p-16"
+          className="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-sm w-full p-5 sm:p-8 md:p-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-10 text-slate-900">Apa Kata Pengguna Law Consult</h2>
           <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -367,7 +408,7 @@ export default function Home() {
         {/* 7. CTA Section Card */}
         <motion.section 
           {...fadeInUp}
-          className="bg-[#1D64FB] rounded-[3rem] p-10 md:p-16 text-center text-white relative overflow-hidden shadow-sm"
+          className="bg-[#1D64FB] rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 md:p-16 text-center text-white relative overflow-hidden shadow-sm"
         >
           <div className="relative z-10 max-w-3xl mx-auto">
             <motion.h2 
@@ -403,7 +444,7 @@ export default function Home() {
       {/* 8. Footer Card */}
       <motion.footer 
         {...fadeInUp}
-        className="bg-white rounded-[3rem] shadow-sm w-full max-w-[1300px] px-8 py-10 md:px-16 md:py-16 mt-2"
+        className="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-sm w-full max-w-[1300px] px-5 py-8 sm:px-8 sm:py-10 md:px-16 md:py-16 mt-2"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
           <div className="lg:col-span-2 pr-8">
@@ -461,7 +502,7 @@ export default function Home() {
         </div>
         {/* Giant Watermark Logo */}
         <div className="w-full flex justify-center mt-12 pb-4 overflow-hidden">
-          <span className="text-[3.5rem] sm:text-[6rem] md:text-[11rem] lg:text-[14rem] font-bold text-slate-100/70 leading-none tracking-tighter whitespace-nowrap select-none">
+          <span className="text-[2.5rem] sm:text-[4rem] md:text-[11rem] lg:text-[14rem] font-bold text-slate-100/70 leading-none tracking-tighter whitespace-nowrap select-none">
             Law Consult
           </span>
         </div>

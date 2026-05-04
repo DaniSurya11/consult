@@ -21,13 +21,30 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState<{ show: boolean; message: string; type: "success" | "info" }>({ show: false, message: "", type: "info" });
+  const [visibleCount, setVisibleCount] = useState(3);
+  const [dateFilter, setDateFilter] = useState("");
 
   // Load and poll bookings from localStorage
   useEffect(() => {
     const loadBookings = () => {
       const saved = localStorage.getItem("bookings");
+      let parsed = [];
       if (saved) {
-        setBookings(JSON.parse(saved));
+        try { parsed = JSON.parse(saved); } catch(e) {}
+      }
+      if (parsed && parsed.length > 0) {
+        setBookings(parsed);
+      } else {
+        // Add default dummy bookings for the demo
+        const dummyBookings: Booking[] = [
+          { id: 101, lawyerId: 1, lawyerName: "Bima Pratama, S.H.", lawyerImg: "https://i.pravatar.cc/150?u=1", lawyerSpecialty: "Hukum Bisnis & Perusahaan", clientName: "Ahmad Rizky", price: "Rp500.000", status: "completed", createdAt: new Date(Date.now() - 5 * 86400000).toISOString() },
+          { id: 102, lawyerId: 2, lawyerName: "Anita Sari, S.H.", lawyerImg: "https://i.pravatar.cc/150?u=2", lawyerSpecialty: "Hukum Keluarga", clientName: "Ahmad Rizky", price: "Rp350.000", status: "completed", createdAt: new Date(Date.now() - 10 * 86400000).toISOString() },
+          { id: 103, lawyerId: 3, lawyerName: "Budi Santoso, S.H.", lawyerImg: "https://i.pravatar.cc/150?u=3", lawyerSpecialty: "Hukum Pidana", clientName: "Ahmad Rizky", price: "Rp750.000", status: "rejected", createdAt: new Date(Date.now() - 15 * 86400000).toISOString() },
+          { id: 104, lawyerId: 4, lawyerName: "Diana Wijaya, S.H.", lawyerImg: "https://i.pravatar.cc/150?u=4", lawyerSpecialty: "Hukum Perdata", clientName: "Ahmad Rizky", price: "Rp400.000", status: "completed", createdAt: new Date(Date.now() - 20 * 86400000).toISOString() },
+          { id: 105, lawyerId: 1, lawyerName: "Bima Pratama, S.H.", lawyerImg: "https://i.pravatar.cc/150?u=1", lawyerSpecialty: "Hukum Bisnis & Perusahaan", clientName: "Ahmad Rizky", price: "Rp500.000", status: "completed", createdAt: new Date(Date.now() - 25 * 86400000).toISOString() }
+        ];
+        localStorage.setItem("bookings", JSON.stringify(dummyBookings));
+        setBookings(dummyBookings);
       }
     };
     loadBookings();
@@ -84,10 +101,28 @@ export default function BookingsPage() {
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Riwayat Booking</h1>
-        <p className="text-sm text-slate-500 font-medium">Pantau status konsultasi Anda</p>
+      {/* Header & Filter */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Riwayat Booking</h1>
+          <p className="text-sm text-slate-500 font-medium">Pantau status konsultasi Anda</p>
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <input 
+            type="date" 
+            value={dateFilter}
+            onChange={(e) => {
+              setDateFilter(e.target.value);
+              setVisibleCount(3);
+            }}
+            className="px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#1D64FB]/20 focus:border-[#1D64FB] w-full sm:w-auto shadow-sm transition-all"
+          />
+          {dateFilter && (
+            <Button variant="ghost" onClick={() => { setDateFilter(""); setVisibleCount(3); }} className="text-slate-400 hover:text-slate-600 px-3 h-[42px] rounded-xl font-semibold">
+              Hapus Filter
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Booking List */}
@@ -105,9 +140,28 @@ export default function BookingsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {[...bookings].reverse()
-            .filter(booking => booking.status === "completed" || booking.status === "rejected")
-            .map((booking) => {
+          {(() => {
+            const filteredBookings = [...bookings].reverse()
+              .filter(booking => booking.status === "completed" || booking.status === "rejected")
+              .filter(booking => {
+                if (!dateFilter) return true;
+                const bookingDate = new Date(booking.createdAt).toISOString().split('T')[0];
+                return bookingDate === dateFilter;
+              });
+
+            const displayedBookings = filteredBookings.slice(0, visibleCount);
+
+            if (filteredBookings.length === 0) {
+              return (
+                <div className="text-center py-10">
+                  <p className="text-sm font-medium text-slate-400">Tidak ada riwayat booking pada tanggal ini.</p>
+                </div>
+              );
+            }
+
+            return (
+              <>
+                {displayedBookings.map((booking) => {
             const statusConfig = getStatusConfig(booking.status);
             return (
               <div key={booking.id} className="bg-white rounded-2xl border p-5 transition-all border-slate-200 shadow-sm">
@@ -180,7 +234,22 @@ export default function BookingsPage() {
               </div>
             );
           })}
-        </div>
+          
+          {visibleCount < filteredBookings.length && (
+            <div className="pt-2 pb-4 flex justify-center">
+              <Button 
+                onClick={() => setVisibleCount(filteredBookings.length)}
+                variant="outline"
+                className="rounded-xl font-bold text-[#1D64FB] border-blue-100 bg-blue-50/50 hover:bg-blue-100 px-8 h-11"
+              >
+                Tampilkan Semua ({filteredBookings.length})
+              </Button>
+            </div>
+          )}
+        </>
+      );
+    })()}
+  </div>
       )}
 
       {/* Toast Notification */}

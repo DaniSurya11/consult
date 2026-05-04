@@ -242,7 +242,7 @@ export default function LawyerDashboard() {
     return (
       <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
         {/* Skeleton Hero */}
-        <div className="bg-white rounded-[2rem] h-[120px] shadow-sm border border-slate-100 flex items-center justify-between p-6">
+        <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] h-auto sm:h-[120px] shadow-sm border border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 gap-4">
           <div className="space-y-3">
             <div className="h-6 w-48 bg-slate-100 rounded-lg animate-pulse"></div>
             <div className="h-4 w-72 bg-slate-100 rounded-lg animate-pulse"></div>
@@ -253,7 +253,7 @@ export default function LawyerDashboard() {
           </div>
         </div>
         {/* Skeleton Stat Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           {[1,2,3,4].map(i => (
             <div key={i} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
               <div className="flex gap-4 items-start">
@@ -287,14 +287,14 @@ export default function LawyerDashboard() {
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* 1. Welcome Hero — Integrated Header */}
       <motion.div {...fade} className="relative z-20">
-        <Card className="border-0 shadow-sm bg-white rounded-[2rem]">
-          <CardContent className="p-6 md:p-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
+        <Card className="border-0 shadow-sm bg-white rounded-[1.5rem] sm:rounded-[2rem]">
+          <CardContent className="p-4 sm:p-6 md:p-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-5">
               {/* Left: Welcome Text */}
               <div>
                 <p className="text-[13px] text-slate-400 font-medium mb-1">Selamat datang kembali,</p>
-                <div className="flex items-center gap-2.5 mb-1.5">
-                  <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Dr. Bima Pratama, S.H.</h1>
+                <div className="flex items-center gap-2 sm:gap-2.5 mb-1.5 flex-wrap">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Bima Pratama, S.H.</h1>
                   {/* Saran #3: Verified badge dengan tooltip interaktif */}
                   <div className="relative" onMouseEnter={() => setShowVerifiedTip(true)} onMouseLeave={() => setShowVerifiedTip(false)}>
                     <motion.svg whileHover={{scale:1.2,rotate:10}} transition={{type:"spring",stiffness:400}} className="w-6 h-6 text-[#1D64FB] cursor-pointer" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></motion.svg>
@@ -313,11 +313,11 @@ export default function LawyerDashboard() {
               </div>
 
               {/* Right: Online Toggle + Notification + Profile */}
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0 flex-wrap">
                 {/* Online/Offline Toggle */}
                 {/* Saran #4: toggleOnline menggunakan localStorage */}
                 <motion.button onClick={toggleOnline} whileHover={{scale:1.03}} whileTap={{scale:0.97}}
-                  className={`flex items-center gap-2.5 px-5 py-2.5 rounded-full font-bold text-[13px] transition-all border ${isOnline?'bg-green-50 border-green-200 text-green-600':'bg-slate-100 border-slate-200 text-slate-400'}`}>
+                  className={`flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-[12px] sm:text-[13px] transition-all border ${isOnline?'bg-green-50 border-green-200 text-green-600':'bg-slate-100 border-slate-200 text-slate-400'}`}>
                   <motion.div className={`w-2.5 h-2.5 rounded-full ${isOnline?'bg-green-500':'bg-slate-400'}`} animate={isOnline?{scale:[1,1.3,1]}:{}} transition={isOnline?{repeat:Infinity,duration:2}:{}}/>
                   <AnimatePresence mode="wait"><motion.span key={isOnline?"on":"off"} initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>{isOnline?"Siap Menerima":"Tidak Tersedia"}</motion.span></AnimatePresence>
                 </motion.button>
@@ -335,7 +335,7 @@ export default function LawyerDashboard() {
 
                   {/* Notification Dropdown */}
                   {showNotifications && (
-                    <div className="absolute top-12 right-0 w-80 bg-white border border-slate-100 shadow-xl rounded-2xl z-[999]">
+                    <div className="absolute top-12 -right-2 sm:right-0 w-[calc(100vw-2rem)] sm:w-80 max-w-[360px] bg-white border border-slate-100 shadow-xl rounded-2xl z-[999] max-h-[80vh] overflow-hidden flex flex-col">
                       <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-t-2xl">
                         <div className="flex items-center gap-2">
                           <h3 className="text-[13px] font-bold text-slate-900">Notifikasi</h3>
@@ -447,12 +447,12 @@ export default function LawyerDashboard() {
                 </div>
 
                 {/* Profile Avatar + Name */}
-                <div className="flex items-center gap-3 pl-2 border-l border-slate-100 cursor-pointer group">
+                <div className="flex items-center gap-2 sm:gap-3 pl-2 border-l border-slate-100 cursor-pointer group">
                   <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#1D64FB] ring-2 ring-blue-50">
-                    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4JLHwnkjUhLBYjIgJAntKAAweR7xtfpXGcSctfMUhE_4OTPtI9YD6RfnFlH0rr-oVwLQy8kEWhqhcCvANSFvnyof9YmEhYg8PQHAQRo4EZIS50J1IOJtp9hd1Z6iM1Ij4BXwuDbuVEAnEbO9Oie5vRp4KhDcWV2v2nOloWoWGf2DNSjlbFlVZGy-uMkw_Idlm5g2kgARvU520bV2TANxXF5Me1vkLrqUFNs4ZhKAgJH_d8YMv_UlAOlJOUmU0IFmcjdre1oQFYcA" alt="Dr. Bima Pratama" className="w-full h-full object-cover" />
+                    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4JLHwnkjUhLBYjIgJAntKAAweR7xtfpXGcSctfMUhE_4OTPtI9YD6RfnFlH0rr-oVwLQy8kEWhqhcCvANSFvnyof9YmEhYg8PQHAQRo4EZIS50J1IOJtp9hd1Z6iM1Ij4BXwuDbuVEAnEbO9Oie5vRp4KhDcWV2v2nOloWoWGf2DNSjlbFlVZGy-uMkw_Idlm5g2kgARvU520bV2TANxXF5Me1vkLrqUFNs4ZhKAgJH_d8YMv_UlAOlJOUmU0IFmcjdre1oQFYcA" alt="Bima Pratama, S.H." className="w-full h-full object-cover" />
                   </div>
                   <div className="hidden lg:block">
-                    <p className="text-[13px] font-bold text-slate-900 group-hover:text-[#1D64FB] transition leading-tight">Dr. Bima Pratama, S.H.</p>
+                    <p className="text-[13px] font-bold text-slate-900 group-hover:text-[#1D64FB] transition leading-tight">Bima Pratama, S.H.</p>
                     <p className="text-[11px] text-slate-400 font-medium">Lihat Profil</p>
                   </div>
                   <svg className="w-4 h-4 text-slate-300 hidden lg:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
@@ -489,7 +489,7 @@ export default function LawyerDashboard() {
       </AnimatePresence>
 
       {/* 2. Stat Cards Row — Ronde 2: Tactile + Sparklines */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           {label:"Konsultasi Aktif",value:(12 + activeBookings.length).toString(),sub:"↑ 20% dari bulan lalu",subColor:"text-green-500",iconBg:"bg-blue-50",iconColor:"text-[#1D64FB]",icon:"M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z",spark:sparklines.konsultasi,sparkColor:"#1D64FB"},
           {label:"Jadwal Hari Ini",value:(3 + pendingBookings.length + activeBookings.length).toString(),sub:"Lihat jadwal Anda",subColor:"text-[#1D64FB]",iconBg:"bg-blue-50",iconColor:"text-[#1D64FB]",icon:"M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",spark:sparklines.jadwal,sparkColor:"#1D64FB"},
@@ -497,18 +497,18 @@ export default function LawyerDashboard() {
           {label:"Rating Saya",value:averageRating,sub:`Dari ${totalReviews} ulasan`,subColor:"text-slate-400",iconBg:"bg-yellow-50",iconColor:"text-yellow-500",icon:"M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z",spark:sparklines.rating,sparkColor:"#eab308"},
         ].map((s,i)=>(
           <motion.div key={i} {...fade} transition={{delay:0.1+i*0.05}} whileHover={{y:-5,transition:{duration:0.2}}}>
-            <Card className="border-0 shadow-sm bg-white rounded-2xl h-full hover:shadow-md transition-shadow cursor-pointer">
-              <CardContent className="p-5 flex items-start gap-4">
-                <div className={`w-11 h-11 ${s.iconBg} ${s.iconColor} rounded-xl flex items-center justify-center shrink-0`}>
+            <Card className="border-0 shadow-sm bg-white rounded-xl sm:rounded-2xl h-full hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-3 sm:p-5 flex flex-col sm:flex-row items-start gap-2 sm:gap-4">
+                <div className={`w-9 h-9 sm:w-11 sm:h-11 ${s.iconBg} ${s.iconColor} rounded-lg sm:rounded-xl flex items-center justify-center shrink-0`}>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={s.icon}/></svg>
                 </div>
                 <div className="flex-1">
-                  <p className="text-[12px] text-slate-400 font-semibold mb-1">{s.label}</p>
-                  <div className="flex items-end justify-between gap-2">
-                    <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none">{s.value}</h3>
-                    <MiniSparkline data={s.spark} color={s.sparkColor}/>
+                  <p className="text-[10px] sm:text-[12px] text-slate-400 font-semibold mb-1 leading-tight">{s.label}</p>
+                  <div className="flex items-end justify-between gap-1 sm:gap-2">
+                    <h3 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight leading-none">{s.value}</h3>
+                    <div className="hidden sm:block"><MiniSparkline data={s.spark} color={s.sparkColor}/></div>
                   </div>
-                  <p className={`text-[11px] font-semibold ${s.subColor} mt-1`}>{s.sub}</p>
+                  <p className={`text-[10px] sm:text-[11px] font-semibold ${s.subColor} mt-1 leading-tight`}>{s.sub}</p>
                 </div>
               </CardContent>
             </Card>
@@ -518,7 +518,7 @@ export default function LawyerDashboard() {
 
       {/* 3. Middle Row: Performance Chart + Recent Consultations + Schedule */}
       {/* Saran #5: Responsive breakpoints — md:grid-cols-2 untuk tablet */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Performance Chart */}
         <motion.div {...fade} transition={{delay:0.3}}>
           <Card className="border-0 shadow-sm bg-white rounded-2xl h-full">
@@ -606,7 +606,7 @@ export default function LawyerDashboard() {
       </div>
 
       {/* 4. Bottom Row: Reviews + Monthly Revenue + Quick Actions */}
-      <div className="grid lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Ulasan Terbaru */}
         <motion.div {...fade} transition={{delay:0.6}}>
           <Card className="border-0 shadow-sm bg-white rounded-2xl h-full">

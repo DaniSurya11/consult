@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 // Demo accounts — only these can login
 const DEMO_ACCOUNTS: Record<string, { role: "client" | "lawyer"; name: string; redirect: string }> = {
   "ahmadrrizky@klien.com": { role: "client", name: "Ahmad Rizky", redirect: "/dashboard" },
-  "bima@lawyer.com": { role: "lawyer", name: "Dr. Bima Pratama, S.H.", redirect: "/dashboard/lawyer" },
+  "bima@lawyer.com": { role: "lawyer", name: "Bima Pratama, S.H.", redirect: "/dashboard/lawyer" },
 };
 
 // Role detection logic

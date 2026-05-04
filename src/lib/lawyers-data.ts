@@ -21,7 +21,7 @@ export interface Lawyer {
 export const lawyers: Lawyer[] = [
   { 
     id: 1, 
-    name: "Dr. Bima Pratama", 
+    name: "Bima Pratama, S.H.", 
     verified: true,
     specialty: "Hukum Bisnis", 
     experience: "10+ tahun exp",

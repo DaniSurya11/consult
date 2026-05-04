@@ -19,8 +19,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationsList, setNotificationsList] = useState<any[]>([]);
-  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
-
   // Hydration-safe: read localStorage only on client
   useEffect(() => {
     setStoredRole(localStorage.getItem("user_role"));
@@ -63,25 +61,27 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   // Dynamic header content based on route (lawyer has its own integrated header)
   const headerContent = isLawyerMode && pathname === "/dashboard/lawyer"
     ? { title: "", subtitle: "" }
-    : pathname.includes("/bookings")
-      ? { title: "Riwayat Booking", subtitle: "Lihat semua riwayat konsultasi Anda" }
-      : pathname.includes("/lawyers")
-        ? { title: "Cari Lawyer", subtitle: "Temukan pengacara yang tepat" }
-        : pathname.includes("/chat")
-          ? { title: "Chat Konsultasi", subtitle: "Komunikasi langsung dengan lawyer" }
-          : pathname.includes("/checkout")
-            ? { title: "Pembayaran", subtitle: "Selesaikan transaksi Anda" }
-            : pathname.includes("/review")
-              ? { title: "Ulasan", subtitle: "Berikan penilaian untuk layanan" }
-              : pathname.includes("/verification")
-                ? { title: "Pusat Verifikasi", subtitle: "Unggah dokumen pendukung Anda" }
-                : pathname.includes("/active")
-                  ? { title: "Konsultasi Aktif", subtitle: "Pantau status konsultasi Anda" }
-                  : { title: "Temukan Lawyer Terbaik", subtitle: "Pilih lawyer sesuai kebutuhan hukum Anda" };
+    : pathname === "/dashboard"
+      ? { title: "Dashboard Klien", subtitle: "Ringkasan aktivitas dan statistik Anda" }
+      : pathname.includes("/bookings")
+        ? { title: "Riwayat Booking", subtitle: "Lihat semua riwayat konsultasi Anda" }
+        : pathname.includes("/lawyers")
+          ? { title: "Daftar Lawyer", subtitle: "Temukan pengacara yang tepat" }
+          : pathname.includes("/chat")
+            ? { title: "Chat Konsultasi", subtitle: "Komunikasi langsung dengan lawyer" }
+            : pathname.includes("/checkout")
+              ? { title: "Pembayaran", subtitle: "Selesaikan transaksi Anda" }
+              : pathname.includes("/review")
+                ? { title: "Ulasan", subtitle: "Berikan penilaian untuk layanan" }
+                : pathname.includes("/verification")
+                  ? { title: "Pusat Verifikasi", subtitle: "Unggah dokumen pendukung Anda" }
+                  : pathname.includes("/active")
+                    ? { title: "Konsultasi Aktif", subtitle: "Pantau status konsultasi Anda" }
+                    : { title: "Temukan Lawyer Terbaik", subtitle: "Pilih lawyer sesuai kebutuhan hukum Anda" };
 
   // Profile info
   const profileInfo = isLawyerMode
-    ? { name: "Dr. Bima Pratama, S.H.", sub: "Lihat Profil", avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuC4JLHwnkjUhLBYjIgJAntKAAweR7xtfpXGcSctfMUhE_4OTPtI9YD6RfnFlH0rr-oVwLQy8kEWhqhcCvANSFvnyof9YmEhYg8PQHAQRo4EZIS50J1IOJtp9hd1Z6iM1Ij4BXwuDbuVEAnEbO9Oie5vRp4KhDcWV2v2nOloWoWGf2DNSjlbFlVZGy-uMkw_Idlm5g2kgARvU520bV2TANxXF5Me1vkLrqUFNs4ZhKAgJH_d8YMv_UlAOlJOUmU0IFmcjdre1oQFYcA" }
+    ? { name: "Bima Pratama, S.H.", sub: "Lihat Profil", avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuC4JLHwnkjUhLBYjIgJAntKAAweR7xtfpXGcSctfMUhE_4OTPtI9YD6RfnFlH0rr-oVwLQy8kEWhqhcCvANSFvnyof9YmEhYg8PQHAQRo4EZIS50J1IOJtp9hd1Z6iM1Ij4BXwuDbuVEAnEbO9Oie5vRp4KhDcWV2v2nOloWoWGf2DNSjlbFlVZGy-uMkw_Idlm5g2kgARvU520bV2TANxXF5Me1vkLrqUFNs4ZhKAgJH_d8YMv_UlAOlJOUmU0IFmcjdre1oQFYcA" }
     : { name: "Ahmad Rizky", sub: "Lihat Profil", avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d" };
 
   // Close mobile menu on route change
@@ -214,7 +214,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   const clientNavItems = [
     { name: "Dashboard", href: "/dashboard", icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" },
-    { name: "Cari Lawyer", href: "/dashboard/lawyers", icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" },
+    { name: "Daftar Lawyer", href: "/dashboard/lawyers", icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" },
     { name: "Konsultasi Aktif", href: "/dashboard/active", icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", badge: clientBookingsBadge > 0 ? clientBookingsBadge : undefined, isLive: clientBookingsBadge > 0 },
     { name: "Pesan & Chat", href: "/dashboard/chat", icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" },
     { name: "Riwayat Booking", href: "/dashboard/bookings", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4", badge: clientCompletedBadge > 0 ? clientCompletedBadge : undefined },
@@ -246,7 +246,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     }
     return pathname === item.href 
       || (item.name === "Dashboard" && pathname === "/dashboard")
-      || (item.name === "Cari Lawyer" && pathname.includes("/lawyers"))
+      || (item.name === "Daftar Lawyer" && pathname.includes("/lawyers"))
       || (item.name === "Konsultasi Aktif" && pathname.includes("/dashboard/active"))
       || (item.name === "Pesan & Chat" && pathname.includes("/dashboard/chat"))
       || (item.name === "Riwayat Booking" && pathname.includes("/bookings"));
@@ -273,8 +273,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <Link 
               key={item.name} 
               href={item.href}
-              onMouseEnter={() => setHoveredNav(item.name)}
-              onMouseLeave={() => setHoveredNav(null)}
               className={`flex items-center justify-between px-4 py-3 rounded-2xl font-semibold text-[14px] transition-all duration-200 active:scale-[0.97] relative group ${
                 isActive 
                   ? "bg-blue-50/50 text-[#1D64FB] relative before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1.5 before:bg-[#1D64FB] before:rounded-r-full" 
@@ -308,13 +306,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   </span>
                 )}
               </div>
-              {/* Hover Preview Tooltip (Audit §3.3) */}
-              {(item as any).hoverPreview && hoveredNav === item.name && (
-                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-200">
-                  {(item as any).hoverPreview}
-                  <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-y-4 border-y-transparent border-r-4 border-r-slate-900"></div>
-                </div>
-              )}
+
             </Link>
           );
         })}
@@ -393,9 +385,103 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </div>
             <span className="text-[17px] font-bold tracking-tight text-[#0F172A]">Law Consult</span>
           </Link>
-          <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200">
-            <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Profile" className="w-full h-full object-cover" />
-          </div>
+          {!isLawyerMode ? (
+            <div className="flex items-center gap-3 relative">
+              <button onClick={() => setShowNotifications(!showNotifications)} className="relative text-slate-500 hover:text-[#1D64FB] transition-colors">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white text-white text-[9px] font-bold flex items-center justify-center animate-pulse">
+                    {notificationCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Mobile Notification Dropdown */}
+              {showNotifications && (
+                <div className="absolute top-12 -right-2 w-[calc(100vw-2rem)] max-w-[360px] bg-white border border-slate-100 shadow-xl rounded-2xl overflow-hidden z-[999] flex flex-col max-h-[80vh]">
+                  <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-[13px] font-bold text-slate-900">Notifikasi</h3>
+                      {notificationCount > 0 && <span className="text-[10px] font-semibold text-[#1D64FB] bg-blue-50 px-1.5 py-0.5 rounded-md">{notificationCount} Baru</span>}
+                    </div>
+                    {notificationCount > 0 && (
+                      <button 
+                        onClick={() => {
+                          const saved = localStorage.getItem("bookings");
+                          if (saved) {
+                            let updated = JSON.parse(saved).map((b: any) => {
+                              let modified = { ...b };
+                              if (b.status === "pending") modified.clientSeenPendingNotif = true;
+                              if (b.status === "accepted") modified.clientSeenAcceptedNotif = true;
+                              if (b.status === "completed") modified.clientSeenCompletedNotif = true;
+                              return modified;
+                            });
+                            localStorage.setItem("bookings", JSON.stringify(updated));
+                          }
+                          setShowNotifications(false);
+                        }}
+                        className="text-[11px] font-bold text-slate-500 hover:text-[#1D64FB] transition-colors cursor-pointer"
+                      >
+                        Tandai Dibaca
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-[300px] overflow-y-auto">
+                    {notificationsList.length > 0 ? (
+                      notificationsList.map((notif, idx) => (
+                        <div key={idx} onClick={() => { 
+                          setShowNotifications(false); 
+                          if (notif.bookingId) {
+                            const saved = localStorage.getItem("bookings");
+                            if (saved) {
+                              try {
+                                const updated = JSON.parse(saved).map((b: any) => {
+                                  if (b.id === notif.bookingId) {
+                                    if (notif.status === "pending") b.clientSeenPendingNotif = true;
+                                    if (notif.status === "accepted") b.clientSeenAcceptedNotif = true;
+                                    if (notif.status === "completed") b.clientSeenCompletedNotif = true;
+                                  }
+                                  return b;
+                                });
+                                localStorage.setItem("bookings", JSON.stringify(updated));
+                              } catch(e) {}
+                            }
+                          }
+                          router.push(notif.url); 
+                        }} className="px-4 py-3 hover:bg-slate-50 border-b border-slate-50 cursor-pointer transition flex gap-3 text-left">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${notif.type === "completed" ? "bg-green-50 text-green-500" : "bg-blue-50 text-blue-500"}`}>
+                            {notif.type === "completed" ? (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                            ) : (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-[13px] font-bold text-slate-900 mb-0.5 leading-tight">{notif.title}</p>
+                            <p className="text-[11px] text-slate-500 leading-snug">{notif.message}</p>
+                            <p className="text-[10px] text-slate-400 mt-1 font-medium">{notif.time}</p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-8 text-center">
+                        <p className="text-[12px] font-medium text-slate-400">Tidak ada notifikasi baru</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 text-center">
+                    <button onClick={() => setShowNotifications(false)} className="text-[11px] font-bold text-slate-500 hover:text-slate-700">Tutup</button>
+                  </div>
+                </div>
+              )}
+
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200">
+                <img src={profileInfo.avatar} alt="Profile" className="w-full h-full object-cover" />
+              </div>
+            </div>
+          ) : (
+            <div className="w-8 h-8" />
+          )}
         </div>
       </div>
 
@@ -579,7 +665,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         )}
 
         {/* Dynamic Page Content - add top padding on mobile for fixed header */}
-        <main className="flex-1 overflow-y-auto smooth-scroll pt-14 lg:pt-0">
+        <main className="flex-1 overflow-y-auto pt-14 lg:pt-0 smooth-scroll">
           {children}
         </main>
       </div>

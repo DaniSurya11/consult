@@ -20,6 +20,8 @@ export default function LawyerWallet() {
   const [withdrawSuccess, setWithdrawSuccess] = useState(false);
   const [escrowBalance, setEscrowBalance] = useState(0);
   const [selectedInvoice, setSelectedInvoice] = useState<Transaction | null>(null);
+  const [visibleCount, setVisibleCount] = useState(5);
+  const [dateFilter, setDateFilter] = useState("");
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -209,8 +211,24 @@ export default function LawyerWallet() {
 
       {/* Transaction History */}
       <Card className="border-0 shadow-[var(--lc-shadow-card)] rounded-3xl">
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <CardTitle className="text-base font-bold text-slate-900 tracking-tight">Riwayat Transaksi</CardTitle>
+          <div className="flex items-center gap-2">
+            <input 
+              type="date" 
+              value={dateFilter}
+              onChange={(e) => {
+                setDateFilter(e.target.value);
+                setVisibleCount(5);
+              }}
+              className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#1D64FB]/20 focus:border-[#1D64FB] shadow-sm transition-all"
+            />
+            {dateFilter && (
+              <Button variant="ghost" onClick={() => { setDateFilter(""); setVisibleCount(5); }} className="text-slate-400 hover:text-slate-600 px-2 h-[30px] rounded-lg text-xs font-semibold">
+                Hapus
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-1">
@@ -221,37 +239,73 @@ export default function LawyerWallet() {
                 </div>
                 <h3 className="text-base font-bold text-slate-700 mb-1">Belum Ada Transaksi</h3>
                 <p className="text-xs text-slate-400 max-w-xs mx-auto">Transaksi akan muncul setelah Anda menyelesaikan konsultasi pertama dengan klien.</p>
-                <div className="mt-6 flex items-center justify-center gap-2 text-xs font-bold text-[#1D64FB]">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
-                  Mulai dengan menerima booking dari klien
-                </div>
               </div>
             ) : (
-              wallet.transactions.map((tx) => (
-                <div key={tx.id} onClick={() => tx.status === "completed" && setSelectedInvoice(tx)} className={`flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition ${tx.status === "completed" ? "cursor-pointer" : ""}`}>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.status === "withdrawn" ? "bg-orange-50 text-orange-500" : tx.status === "processing" ? "bg-amber-50 text-amber-500" : "bg-green-50 text-green-500"}`}>
-                      {tx.status === "withdrawn" ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
-                      ) : (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-[13px] font-bold text-slate-900">{tx.clientName}</p>
-                      <p className="text-[11px] text-slate-400 font-medium">{tx.date}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-[13px] font-black ${tx.status === "withdrawn" ? "text-orange-500" : tx.status === "processing" ? "text-amber-500" : "text-green-500"}`}>
-                      {tx.status === "withdrawn" || tx.status === "processing" ? "-" : "+"}{tx.amount}
-                    </p>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${tx.status === "withdrawn" ? "text-orange-400" : tx.status === "processing" ? "text-amber-400" : "text-green-400"}`}>
-                      {tx.status === "withdrawn" ? "Ditarik" : tx.status === "processing" ? "⏳ Diproses" : "Selesai"}
-                    </span>
-                  </div>
-                </div>
-              ))
+              (() => {
+                const filteredTx = wallet.transactions.filter(tx => {
+                  if (!dateFilter) return true;
+                  
+                  let txDateStr = tx.date;
+                  const parts = tx.date.split('/');
+                  if (parts.length === 3) {
+                    txDateStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                  } else {
+                    try {
+                      txDateStr = new Date(tx.date).toISOString().split('T')[0];
+                    } catch(e) {}
+                  }
+                  
+                  return txDateStr === dateFilter;
+                });
+                
+                const displayedTx = filteredTx.slice(0, visibleCount);
+                
+                if (filteredTx.length === 0) {
+                  return <div className="text-center py-10 text-sm text-slate-400 font-medium">Tidak ada transaksi pada tanggal ini.</div>;
+                }
+                
+                return (
+                  <>
+                    {displayedTx.map((tx) => (
+                      <div key={tx.id} onClick={() => tx.status === "completed" && setSelectedInvoice(tx)} className={`flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition ${tx.status === "completed" ? "cursor-pointer" : ""}`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.status === "withdrawn" ? "bg-orange-50 text-orange-500" : tx.status === "processing" ? "bg-amber-50 text-amber-500" : "bg-green-50 text-green-500"}`}>
+                            {tx.status === "withdrawn" ? (
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                            ) : (
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-[13px] font-bold text-slate-900">{tx.clientName}</p>
+                            <p className="text-[11px] text-slate-400 font-medium">{tx.date}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-[13px] font-black ${tx.status === "withdrawn" ? "text-orange-500" : tx.status === "processing" ? "text-amber-500" : "text-green-500"}`}>
+                            {tx.status === "withdrawn" || tx.status === "processing" ? "-" : "+"}{tx.amount}
+                          </p>
+                          <span className={`text-[10px] font-bold uppercase tracking-wider ${tx.status === "withdrawn" ? "text-orange-400" : tx.status === "processing" ? "text-amber-400" : "text-green-400"}`}>
+                            {tx.status === "withdrawn" ? "Ditarik" : tx.status === "processing" ? "⏳ Diproses" : "Selesai"}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {visibleCount < filteredTx.length && (
+                      <div className="pt-4 flex justify-center">
+                        <Button 
+                          onClick={() => setVisibleCount(filteredTx.length)}
+                          variant="outline"
+                          className="rounded-xl font-bold text-[#1D64FB] border-blue-100 bg-blue-50/50 hover:bg-blue-100 px-8 h-10 text-xs"
+                        >
+                          Tampilkan Semua ({filteredTx.length})
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                );
+              })()
             )}
           </div>
         </CardContent>
