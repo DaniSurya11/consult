@@ -104,6 +104,11 @@ export default function ClientDashboard() {
     localStorage.setItem("has_seen_tour", "true");
   };
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -145,62 +150,62 @@ export default function ClientDashboard() {
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Tour Modal */}
-      {typeof window !== "undefined" && createPortal(
+      {mounted && createPortal(
         <AnimatePresence>
           {showTour && (
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+              className="fixed top-0 left-0 w-full h-full z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm pointer-events-auto"
             >
               <motion.div 
                 initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
-                className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative"
+                className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden relative"
               >
-                <div className="p-6 sm:p-8">
+                <div className="p-6 sm:p-10">
                   <div className="flex justify-between items-center mb-6">
-                    <Badge className="bg-blue-50 text-[#1D64FB] hover:bg-blue-100 font-bold border-0">Panduan Cepat {tourStep}/3</Badge>
-                    <button onClick={skipTour} className="text-slate-400 hover:text-slate-600">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <Badge className="bg-blue-50 text-[#1D64FB] hover:bg-blue-100 font-bold border-0 px-3 py-1 rounded-full text-[11px]">Panduan Cepat {tourStep}/3</Badge>
+                    <button onClick={skipTour} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                   </div>
                   
                   {tourStep === 1 && (
                     <div className="space-y-4">
-                      <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-[#1D64FB] mb-2">
+                      <div className="w-16 h-16 bg-blue-50 rounded-[1.25rem] flex items-center justify-center text-[#1D64FB] mb-2 shadow-sm shadow-blue-100">
                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                       </div>
-                      <h3 className="text-xl font-bold text-slate-900">Temukan Lawyer Anda</h3>
-                      <p className="text-slate-500 text-[14px] leading-relaxed">Gunakan menu <b>Cari Lawyer Baru</b> untuk menelusuri ratusan pengacara profesional yang sesuai dengan masalah hukum Anda.</p>
+                      <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Temukan Lawyer Anda</h3>
+                      <p className="text-slate-500 text-[15px] leading-relaxed font-medium">Gunakan menu <span className="text-slate-900 font-bold">Cari Lawyer Baru</span> untuk menelusuri ratusan pengacara profesional yang sesuai dengan masalah hukum Anda.</p>
                     </div>
                   )}
                   {tourStep === 2 && (
                     <div className="space-y-4">
-                      <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center text-green-500 mb-2">
+                      <div className="w-16 h-16 bg-green-50 rounded-[1.25rem] flex items-center justify-center text-green-500 mb-2 shadow-sm shadow-green-100">
                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                       </div>
-                      <h3 className="text-xl font-bold text-slate-900">Konsultasi Live Chat</h3>
-                      <p className="text-slate-500 text-[14px] leading-relaxed">Pantau status pesanan dan langsung mengobrol di ruang privasi pada menu <b>Konsultasi Aktif</b>.</p>
+                      <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Konsultasi Live Chat</h3>
+                      <p className="text-slate-500 text-[15px] leading-relaxed font-medium">Pantau status pesanan dan langsung mengobrol di ruang privasi pada menu <span className="text-slate-900 font-bold">Konsultasi Aktif</span>.</p>
                     </div>
                   )}
                   {tourStep === 3 && (
                     <div className="space-y-4">
-                      <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-500 mb-2">
+                      <div className="w-16 h-16 bg-purple-50 rounded-[1.25rem] flex items-center justify-center text-purple-500 mb-2 shadow-sm shadow-purple-100">
                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                       </div>
-                      <h3 className="text-xl font-bold text-slate-900">Pantau Statistik Anda</h3>
-                      <p className="text-slate-500 text-[14px] leading-relaxed">Lihat total pengeluaran dan riwayat aktivitas hukum Anda langsung dari Dashboard ini.</p>
+                      <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Pantau Statistik Anda</h3>
+                      <p className="text-slate-500 text-[15px] leading-relaxed font-medium">Lihat total pengeluaran dan riwayat aktivitas hukum Anda langsung dari Dashboard ini.</p>
                     </div>
                   )}
   
-                  <div className="mt-8 flex items-center justify-between">
+                  <div className="mt-10 flex items-center justify-between">
                     <div className="flex gap-2">
                       {[1, 2, 3].map(step => (
-                        <div key={step} className={`w-2 h-2 rounded-full transition-colors ${tourStep === step ? 'bg-[#1D64FB]' : 'bg-slate-200'}`} />
+                        <div key={step} className={`h-1.5 rounded-full transition-all duration-300 ${tourStep === step ? 'w-8 bg-[#1D64FB]' : 'w-2 bg-slate-200'}`} />
                       ))}
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" onClick={skipTour} className="text-slate-500 hover:bg-slate-50 font-semibold text-[13px]">Lewati</Button>
-                      <Button onClick={nextTourStep} className="bg-[#1D64FB] hover:bg-blue-700 text-white font-bold px-6 rounded-xl text-[13px]">
+                    <div className="flex gap-3">
+                      <Button variant="ghost" onClick={skipTour} className="text-slate-500 hover:bg-slate-50 font-bold text-[14px]">Lewati</Button>
+                      <Button onClick={nextTourStep} className="bg-[#1D64FB] hover:bg-blue-700 text-white font-bold px-8 h-12 rounded-2xl text-[14px] shadow-lg shadow-blue-500/20">
                         {tourStep === 3 ? "Mulai Sekarang" : "Lanjut"}
                       </Button>
                     </div>
