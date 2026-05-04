@@ -87,27 +87,16 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased overflow-x-hidden;
+    @apply bg-background text-foreground font-sans antialiased;
   }
 }
 
 /* ═══ Mobile Scroll & Touch Fixes ═══ */
 @media (max-width: 1023px) {
-  html, body {
-    -webkit-overflow-scrolling: touch;
-    overflow-x: hidden;
-  }
-
   /* Prevent framer-motion animations from causing layout shifts on mobile */
   .motion-reduce * {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
-  }
-
-  /* Fix mobile scroll containers */
-  main, [role="main"] {
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
   }
 }
 

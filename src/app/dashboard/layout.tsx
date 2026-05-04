@@ -351,7 +351,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans flex overflow-hidden">
+    <div className="min-h-[100dvh] bg-[#F8FAFC] text-slate-900 font-sans flex overflow-hidden">
       
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-[280px] bg-white border-r border-slate-200 shrink-0">
@@ -517,7 +517,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#F8FAFC]">
+      <div className="flex-1 flex flex-col h-[100dvh] overflow-hidden bg-[#F8FAFC]">
         
         {/* Dynamic Header Bar — changes based on route */}
         {headerContent.title && (
