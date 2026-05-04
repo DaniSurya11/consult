@@ -39,7 +39,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-slate-100 text-slate-900 overflow-x-clip font-sans p-3 sm:p-4 md:p-6 flex flex-col gap-3 sm:gap-4 md:gap-6 items-center relative">
+    <div className="min-h-[100dvh] bg-slate-100 text-slate-900 overflow-x-clip font-sans p-3 sm:p-4 md:p-6 pt-[calc(1rem+env(safe-area-inset-top))] flex flex-col gap-3 sm:gap-4 md:gap-6 items-center relative">
       {/* Navbar Card */}
       <motion.div 
         initial={{ y: -20, opacity: 0 }}

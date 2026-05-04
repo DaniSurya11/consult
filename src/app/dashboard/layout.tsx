@@ -369,7 +369,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Mobile Header */}
-      <div className="fixed top-0 left-0 right-0 z-40 lg:hidden bg-white border-b border-slate-200">
+      <div className="fixed top-0 left-0 right-0 z-40 lg:hidden bg-white border-b border-slate-200 pt-[env(safe-area-inset-top)]">
         <div className="flex items-center justify-between px-4 h-14">
           <button 
             onClick={() => setMobileMenuOpen(true)}
@@ -665,7 +665,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         )}
 
         {/* Dynamic Page Content - add top padding on mobile for fixed header */}
-        <main className="flex-1 overflow-y-auto pt-14 lg:pt-0 smooth-scroll">
+        <main className="flex-1 overflow-y-auto pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pt-0 smooth-scroll">
           {children}
         </main>
       </div>
