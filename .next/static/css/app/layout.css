@@ -1774,6 +1774,10 @@ video {
   --tw-border-opacity: 1;
   border-color: rgb(254 240 138 / var(--tw-border-opacity, 1));
 }
+.border-slate-900 {
+  --tw-border-opacity: 1;
+  border-color: rgb(15 23 42 / var(--tw-border-opacity, 1));
+}
 .bg-\[\#1D64FB\] {
   --tw-bg-opacity: 1;
   background-color: rgb(29 100 251 / var(--tw-bg-opacity, 1));
@@ -1962,6 +1966,9 @@ video {
 .bg-yellow-500 {
   --tw-bg-opacity: 1;
   background-color: rgb(234 179 8 / var(--tw-bg-opacity, 1));
+}
+.bg-slate-900\/5 {
+  background-color: rgb(15 23 42 / 0.05);
 }
 .bg-gradient-to-br {
   background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
@@ -2677,6 +2684,9 @@ video {
 .duration-500 {
   transition-duration: 500ms;
 }
+.duration-700 {
+  transition-duration: 700ms;
+}
 .ease-in-out {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -2732,6 +2742,9 @@ video {
 }
 .duration-500 {
   animation-duration: 500ms;
+}
+.duration-700 {
+  animation-duration: 700ms;
 }
 .ease-in-out {
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -3062,6 +3075,10 @@ html, body {
 .focus\:border-transparent:focus {
   border-color: transparent;
 }
+.focus\:border-slate-900:focus {
+  --tw-border-opacity: 1;
+  border-color: rgb(15 23 42 / var(--tw-border-opacity, 1));
+}
 .focus\:outline-none:focus {
   outline: 2px solid transparent;
   outline-offset: 2px;
@@ -3080,6 +3097,9 @@ html, body {
 }
 .focus\:ring-ring:focus {
   --tw-ring-color: hsl(var(--ring));
+}
+.focus\:ring-slate-900\/10:focus {
+  --tw-ring-color: rgb(15 23 42 / 0.1);
 }
 .focus\:ring-offset-2:focus {
   --tw-ring-offset-width: 2px;
@@ -3167,8 +3187,15 @@ html, body {
   --tw-border-opacity: 1;
   border-color: rgb(29 100 251 / var(--tw-border-opacity, 1));
 }
+.peer:checked ~ .peer-checked\:border-slate-900 {
+  --tw-border-opacity: 1;
+  border-color: rgb(15 23 42 / var(--tw-border-opacity, 1));
+}
 .peer:checked ~ .peer-checked\:bg-blue-50\/50 {
   background-color: rgb(239 246 255 / 0.5);
+}
+.peer:checked ~ .peer-checked\:bg-slate-900\/5 {
+  background-color: rgb(15 23 42 / 0.05);
 }
 @media (min-width: 640px) {
 
